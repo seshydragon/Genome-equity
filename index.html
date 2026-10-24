@@ -137,8 +137,10 @@ section.block{padding:clamp(26px,4vw,44px) 0;scroll-margin-top:80px}
 .chart-box{position:relative;height:300px}
 .chart-box.tall{height:340px}
 canvas{max-width:100%}
-.donuts{display:grid;grid-template-columns:1fr 1fr;gap:10px;height:100%}
-.donut{position:relative;min-height:230px}
+.donuts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* Bound the height: with maintainAspectRatio:false, an auto-height parent
+   feeds the canvas size back into the card, so the rings grow without limit. */
+.donut{position:relative;height:290px}
 .donut canvas{position:relative;z-index:1}
 .donut-center{
   position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -416,6 +418,7 @@ main{position:relative;z-index:1}
   .alloc-row span{font-size:11px;line-height:1.25}
   .alloc-row output{font-size:11px}
   .donuts{grid-template-columns:1fr}
+  .donut{height:250px}
   .brand span{display:none}
 }
 @media (prefers-reduced-motion:reduce){
@@ -1728,7 +1731,9 @@ function showTourStep(i) {
   const target = document.querySelector(step.sel);
   if (target) {
     target.classList.add('tour-target');
-    target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+    // align to the top: some sections are taller than the viewport, and centring
+    // one of those scrolls the heading and the charts off-screen
+    target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
   }
   $('#tourStep').textContent = `Step ${i + 1} of ${TOUR.length}`;
   $('#tourTitle').textContent = step.title;
