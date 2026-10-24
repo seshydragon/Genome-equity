@@ -3,372 +3,1584 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#07090c">
-<title>The Reference Gap — an atlas of genomic blind spots</title>
+<meta name="theme-color" content="#F5F7FC">
+<meta name="description" content="Genomic Blindspots — an interactive dashboard exposing who is missing from the world’s genomic data, and what that means at the bedside.">
+<title>Genomic Blindspots — the equity gap in genomic data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+/* ---------------------------------------------------------------- tokens */
 :root{
-  --bg:#07090c;--panel:#0d1218;--line:rgba(236,231,219,.12);--ink:#ece7db;
-  --ink2:#bcb7aa;--muted:#7f8794;--faint:#5b6371;
-  --eur:#e0aa55;--asi:#56b3c4;--afr:#79bd86;--lat:#dd9070;--oth:#9a93b8;
-  --serif:Georgia,'Times New Roman',serif;
-  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --bg:#F5F7FC; --surface:#FFFFFF; --surface-2:#FAFBFE; --text:#14182B; --muted:#5B6380;
+  --border:#E3E7F3; --primary:#3B3FD8; --primary-weak:#EEF0FF; --accent:#14B8A6;
+  --over:#2563EB; --fair:#94A3B8; --amber:#F59E0B; --coral:#F43F5E; --crimson:#BE123C;
+  --chart-grid:rgba(20,24,43,.09); --chart-text:#5B6380;
+  --shadow:0 1px 2px rgba(20,24,43,.05),0 10px 28px rgba(20,24,43,.07);
+  --shadow-sm:0 1px 2px rgba(20,24,43,.06);
+  --radius:16px; --radius-sm:10px;
+  --ok:#0F766E; --warn:#B45309;
 }
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,'Segoe UI',sans-serif;
-  background-image:radial-gradient(900px 520px at 10% -8%,rgba(224,170,85,.10),transparent 62%),
-  radial-gradient(800px 500px at 96% 2%,rgba(86,179,196,.07),transparent 60%);background-attachment:fixed}
-.shell{max-width:1180px;margin:auto;padding:0 clamp(18px,4vw,48px)}
-header{position:sticky;top:0;z-index:20;backdrop-filter:blur(12px);background:rgba(7,9,12,.8);border-bottom:1px solid var(--line)}
-.bar{display:flex;align-items:center;justify-content:space-between;gap:16px;height:60px}
-.brand{font:11px/1.3 var(--mono);letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:var(--ink)}
-.brand span{display:block;color:var(--faint);font-size:9px}
-nav{display:flex;gap:4px;overflow:auto}
-nav a{font:10px var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:7px 9px;white-space:nowrap}
-nav a:hover{color:var(--ink)}
-section{padding:clamp(44px,7vw,84px) 0;border-top:1px solid var(--line)}
-.eyebrow{font:10px var(--mono);letter-spacing:.24em;text-transform:uppercase;color:var(--eur);margin:0 0 20px}
-h1{font-family:var(--serif);font-weight:400;font-size:clamp(2.3rem,5.4vw,4.4rem);line-height:.98;letter-spacing:-.03em;margin:0;max-width:15ch}
-h1 em{color:var(--eur)}
-.lede{color:var(--ink2);max-width:56ch;margin:22px 0 0}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);margin-top:34px;border-block:1px solid var(--line)}
-.stats div{background:var(--bg);padding:16px 14px 18px 0}
-.stats div+div{padding-left:14px}
-.stats b{display:block;font:500 clamp(1.5rem,2.6vw,2rem)/1 var(--mono);letter-spacing:-.03em}
-.stats b i{font-style:normal;font-size:.6em;color:var(--eur)}
-.stats span{display:block;font-size:11.5px;color:var(--muted);margin-top:8px;max-width:26ch}
-.duo{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:26px}
-.duo h4{font:10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);font-weight:400;margin:0 0 10px;line-height:1.5}
-.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
-.cell{aspect-ratio:1;border-radius:1px;background:var(--c);transition:opacity .2s,transform .2s}
-.cell.dim{opacity:.12}
-.cap{font-size:11px;color:var(--muted);margin:10px 0 0;min-height:2.6em;font-variant-numeric:tabular-nums}
-.legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
-.legend button{display:inline-flex;align-items:center;gap:7px;background:none;border:1px solid transparent;color:var(--muted);
-  font:10px var(--mono);padding:5px 8px;border-radius:2px;cursor:pointer}
-.legend button:hover,.legend button.on{background:rgba(236,231,219,.06);border-color:var(--line);color:var(--ink)}
-.dot{width:9px;height:9px;border-radius:1px;background:var(--c);flex:none}
-.note{border-left:1px solid var(--line);padding-left:12px;color:var(--muted);font-size:11.5px;margin:14px 0 0;line-height:1.55}
-h2{font-family:var(--serif);font-weight:400;font-size:clamp(1.7rem,3.4vw,2.7rem);line-height:1.04;letter-spacing:-.025em;margin:0 0 8px}
-.intro{color:var(--ink2);font-size:14.5px;max-width:62ch;margin:0 0 26px}
-.rows{display:grid;gap:2px}
-.row{display:grid;grid-template-columns:120px 1fr 58px;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(236,231,219,.06)}
-.row .lbl{font-size:12.5px;color:var(--ink2);display:flex;align-items:center;gap:7px}
-.track{position:relative;height:18px}
-.rec{position:absolute;left:0;top:0;height:7px;border-radius:2px;background:var(--c)}
-.pop{position:absolute;left:0;top:11px;height:7px;border-radius:2px;background:repeating-linear-gradient(-45deg,rgba(236,231,219,.55) 0 1px,transparent 1px 6px);border:1px solid rgba(236,231,219,.18)}
-.mult{font:12px var(--mono);text-align:right;color:var(--ink)}
-.mult small{display:block;font-size:8px;color:var(--faint);letter-spacing:.1em;text-transform:uppercase}
-.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-.card{border:1px solid var(--line);border-radius:3px;padding:18px;background:rgba(255,255,255,.014)}
-.card b{display:block;font:500 26px/1 var(--mono);letter-spacing:-.03em;color:var(--eur);margin-bottom:8px}
-.card h3{font-family:var(--serif);font-weight:400;font-size:18px;margin:0 0 8px;letter-spacing:-.01em}
-.card p{font-size:12px;line-height:1.55;color:var(--ink2);margin:0}
-.slider{display:grid;grid-template-columns:120px 1fr 52px;gap:12px;align-items:center;margin-bottom:12px}
-.slider span{font-size:12px;color:var(--ink2);display:flex;align-items:center;gap:7px}
-.slider output{font:12px var(--mono);text-align:right}
-input[type=range]{width:100%;accent-color:var(--eur)}
-.scores{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:20px}
-.scores div{background:var(--panel);padding:14px}
-.scores b{display:block;font:500 24px/1 var(--mono);letter-spacing:-.03em}
-.scores span{display:block;font-size:10px;color:var(--muted);margin-top:6px;line-height:1.4}
-.presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
-.presets button{font:10px var(--mono);background:none;border:1px solid var(--line);color:var(--muted);padding:6px 9px;border-radius:2px;cursor:pointer}
-.presets button:hover{color:var(--ink);border-color:rgba(236,231,219,.3)}
-footer{border-top:1px solid var(--line);padding:36px 0 44px;color:var(--faint);font-size:11.5px;line-height:1.6}
-.dragons{position:fixed;inset:0;pointer-events:none;z-index:3;overflow:hidden}
-.dragon{position:absolute;color:var(--eur);opacity:.4;animation:drift 30s ease-in-out infinite}
-.dragon svg{width:100%;height:auto;display:block;filter:drop-shadow(0 0 20px rgba(224,170,85,.2))}
-@keyframes drift{0%,100%{transform:translate3d(0,0,0) rotate(-5deg)}33%{transform:translate3d(24px,-30px,0) rotate(4deg)}66%{transform:translate3d(8px,16px,0) rotate(-2deg)}}
-#oracleBtn{position:fixed;right:18px;bottom:18px;z-index:30;display:inline-flex;align-items:center;gap:8px;
-  background:rgba(10,14,19,.94);border:1px solid rgba(224,170,85,.42);border-radius:999px;color:var(--ink);
-  font:10px var(--mono);letter-spacing:.14em;text-transform:uppercase;padding:8px 14px 8px 10px;cursor:pointer}
-#oracleBtn svg{width:32px;height:20px;color:var(--eur)}
-#oracle{position:fixed;right:18px;bottom:18px;z-index:40;width:min(360px,calc(100vw - 28px));display:none;
-  background:linear-gradient(180deg,#11171f,#0a0e13);border:1px solid rgba(224,170,85,.35);border-radius:4px;
-  padding:16px;box-shadow:0 24px 60px rgba(0,0,0,.6)}
-#oracle.open{display:block}
-#oracle .head{display:flex;align-items:center;gap:9px;margin-bottom:12px}
-#oracle .head svg{width:40px;height:25px;color:var(--eur)}
-#oracle .head b{font:10px var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--eur);display:block}
-#oracle .head small{font-size:10px;color:var(--faint)}
-#oracle .head button{margin-left:auto;background:none;border:0;color:var(--muted);font-size:20px;cursor:pointer;line-height:1}
-#oracle p.fact{font-family:var(--serif);font-size:16px;line-height:1.42;margin:0}
-#oracle .foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
-#oracle .tag{font:10px var(--mono);color:var(--asi);border:1px solid rgba(86,179,196,.35);padding:3px 7px;border-radius:2px}
-#oracle .foot button{font:10px var(--mono);text-transform:uppercase;letter-spacing:.1em;background:var(--ink);color:#0a0d11;
-  border:0;border-radius:2px;padding:8px 11px;cursor:pointer}
-#oracle .fine{font-size:9.5px;color:var(--faint);margin:9px 0 0;line-height:1.45}
-@media(max-width:900px){.dragons{display:none}.cards{grid-template-columns:1fr}}
-@media(max-width:640px){.stats{grid-template-columns:1fr}.stats div+div{padding-left:0;border-top:1px solid var(--line)}
-  .duo{grid-template-columns:1fr}.row,.slider{grid-template-columns:88px 1fr 48px}.scores{grid-template-columns:1fr}
-  #oracleBtn span{display:none}}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0E1020; --surface:#181B33; --surface-2:#1E2240; --text:#ECEEFB; --muted:#A7AECB;
+    --border:#2A2F52; --primary:#8B90FF; --primary-weak:#23264A; --accent:#2DD4BF;
+    --over:#60A5FA; --fair:#94A3B8; --amber:#FBBF24; --coral:#FB7185; --crimson:#F43F5E;
+    --chart-grid:rgba(236,238,251,.10); --chart-text:#A7AECB;
+    --shadow:0 1px 2px rgba(0,0,0,.32),0 10px 28px rgba(0,0,0,.36);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.3);
+    --ok:#5EEAD4; --warn:#FCD34D;
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  font-feature-settings:"cv11","ss01";
+}
+h1,h2,h3,h4{margin:0;line-height:1.15;letter-spacing:-.02em}
+p{margin:0}
+a{color:var(--primary)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--primary);outline-offset:2px;border-radius:6px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip{position:absolute;left:12px;top:-60px;z-index:200;background:var(--surface);color:var(--text);padding:10px 14px;border-radius:8px;border:1px solid var(--border)}
+.skip:focus{top:12px}
+.wrap{max-width:1200px;margin:0 auto;padding:0 clamp(16px,3vw,32px)}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.tiny{font-size:11.5px;line-height:1.45}
+
+/* ---------------------------------------------------------------- header */
+.topbar{
+  position:sticky;top:0;z-index:60;backdrop-filter:saturate(1.4) blur(14px);
+  background:color-mix(in srgb,var(--bg) 86%,transparent);
+  border-bottom:1px solid var(--border);
+}
+.topbar-in{display:flex;align-items:center;gap:18px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);flex:none}
+.logo{width:30px;height:30px;color:var(--primary);flex:none}
+.brand b{font-size:15px;letter-spacing:-.01em;display:block;line-height:1.1}
+.brand span{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.topnav{display:flex;gap:2px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.topnav::-webkit-scrollbar{display:none}
+.topnav a{
+  font-size:12.5px;font-weight:500;color:var(--muted);text-decoration:none;
+  padding:8px 10px;border-radius:8px;white-space:nowrap
+}
+.topnav a:hover{color:var(--text);background:var(--surface-2)}
+.topnav a.active{color:var(--primary);background:var(--primary-weak)}
+
+/* ---------------------------------------------------------------- buttons */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border:1px solid var(--border);background:var(--surface);color:var(--text);
+  font-size:13px;font-weight:600;padding:9px 14px;border-radius:10px;cursor:pointer;
+  transition:transform .15s ease,box-shadow .15s ease,background .15s ease,border-color .15s ease;
+  box-shadow:var(--shadow-sm);white-space:nowrap
+}
+.btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(20,24,43,.12)}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{background:transparent;box-shadow:none}
+.btn.small{padding:6px 10px;font-size:12px;border-radius:8px}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* ---------------------------------------------------------------- cards */
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:clamp(16px,2.2vw,24px);min-width:0
+}
+.card-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}
+.card-head h3{font-size:16px;font-weight:700}
+.card-head p{font-size:12.5px;color:var(--muted);margin-top:4px;max-width:62ch}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
+  padding:4px 9px;border-radius:999px;border:1px solid var(--border);
+  background:var(--surface-2);color:var(--muted);white-space:nowrap
+}
+.chip.hot{color:var(--crimson);border-color:color-mix(in srgb,var(--crimson) 30%,var(--border));background:color-mix(in srgb,var(--crimson) 8%,var(--surface))}
+.chip.cool{color:var(--over);border-color:color-mix(in srgb,var(--over) 30%,var(--border));background:color-mix(in srgb,var(--over) 8%,var(--surface))}
+.chip.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 30%,var(--border));background:color-mix(in srgb,var(--ok) 8%,var(--surface))}
+
+/* ---------------------------------------------------------------- hero */
+.hero{padding:clamp(28px,5vw,56px) 0 clamp(24px,4vw,40px)}
+.eyebrow{
+  font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--primary);
+  display:flex;align-items:center;gap:10px;margin-bottom:14px
+}
+.eyebrow::before{content:"";width:24px;height:2px;background:currentColor;border-radius:2px}
+h1{font-size:clamp(2rem,4.6vw,3.5rem);font-weight:800;letter-spacing:-.035em;max-width:20ch}
+h1 em{font-style:normal;color:var(--primary)}
+.lede{color:var(--muted);font-size:clamp(14px,1.5vw,17px);max-width:64ch;margin-top:16px}
+.lede strong{color:var(--text);font-weight:650}
+.kpis{display:grid;grid-template-columns:1.25fr 1fr 1fr 1fr;gap:14px;margin-top:clamp(22px,3vw,32px)}
+.kpi{display:flex;flex-direction:column;gap:6px;position:relative;overflow:hidden}
+.kpi .big{font-size:clamp(1.9rem,3.4vw,2.7rem);font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+.kpi .big small{font-size:.44em;font-weight:600;letter-spacing:0;color:var(--muted);margin-left:2px}
+.kpi .lbl{font-size:12.5px;color:var(--muted);line-height:1.45;max-width:30ch}
+.kpi .mini{margin-top:auto;padding-top:10px;font-size:11px;font-weight:600;color:var(--muted)}
+.kpi.hero-kpi{background:linear-gradient(150deg,var(--primary),#6D5BF0);border-color:transparent;color:#fff}
+.kpi.hero-kpi .lbl,.kpi.hero-kpi .mini,.kpi.hero-kpi .big small{color:rgba(255,255,255,.82)}
+.gauge-wrap{display:flex;align-items:center;gap:14px}
+.gauge{width:84px;height:84px;flex:none;transform:rotate(-90deg)}
+.gauge circle{fill:none;stroke-width:9;stroke-linecap:round}
+.gauge .track{stroke:var(--border)}
+.gauge .val{stroke:var(--primary);transition:stroke-dashoffset .8s cubic-bezier(.2,.7,.2,1)}
+.gauge-txt{font-size:12px;color:var(--muted);line-height:1.4}
+.takeaway{
+  margin-top:14px;border-left:3px solid var(--accent);background:var(--surface);
+  border-radius:0 12px 12px 0;padding:12px 16px;font-size:13.5px;color:var(--text);box-shadow:var(--shadow-sm)
+}
+.takeaway b{font-weight:700}
+
+/* ---------------------------------------------------------------- sections */
+section.block{padding:clamp(26px,4vw,44px) 0;scroll-margin-top:80px}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:16px;flex-wrap:wrap}
+.sec-head h2{font-size:clamp(1.25rem,2.2vw,1.65rem);font-weight:750;letter-spacing:-.025em}
+.sec-head p{font-size:13px;color:var(--muted);margin-top:5px;max-width:72ch}
+
+/* ---------------------------------------------------------------- charts */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.chart-box{position:relative;height:300px}
+.chart-box.tall{height:340px}
+canvas{max-width:100%}
+.donuts{display:grid;grid-template-columns:1fr 1fr;gap:10px;height:100%}
+.donut{position:relative;min-height:230px}
+.donut canvas{position:relative;z-index:1}
+.donut-center{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  pointer-events:none;text-align:center;z-index:0
+}
+.donut-center b{font-size:24px;font-weight:800;letter-spacing:-.03em}
+.donut-center span{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.legend-row{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:10px}
+.legend-row span{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted)}
+.sw{width:9px;height:9px;border-radius:3px;background:var(--c);flex:none}
+
+/* ---------------------------------------------------------------- treemap */
+.treemap{position:relative;width:100%;height:clamp(300px,42vw,430px);border-radius:12px;overflow:hidden;background:var(--surface-2)}
+.tile{position:absolute;padding:3px;border:0;background:none;cursor:pointer;text-align:left;color:inherit}
+.tile-in{
+  position:relative;width:100%;height:100%;border-radius:10px;overflow:hidden;padding:10px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  transition:transform .18s ease,filter .18s ease;color:#fff
+}
+.tile:hover .tile-in{transform:scale(.985);filter:brightness(1.06)}
+.tile:focus-visible{outline:3px solid var(--text);outline-offset:-3px;border-radius:12px}
+.tile[aria-pressed="true"] .tile-in{box-shadow:inset 0 0 0 3px var(--text)}
+.tile .t-name{font-size:12.5px;font-weight:700;line-height:1.2;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.tile .t-sub{font-size:10.5px;opacity:.92;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.tile .t-ratio{font-size:clamp(15px,2vw,22px);font-weight:800;letter-spacing:-.03em;line-height:1;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.tmap-legend{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:11px;color:var(--muted);flex-wrap:wrap}
+.tmap-scale{height:10px;flex:1;min-width:140px;border-radius:6px;background:linear-gradient(90deg,#BE123C,#F43F5E,#F59E0B,#94A3B8,#2563EB)}
+
+/* ---------------------------------------------------------------- controls */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{display:block;margin-top:14px}
+.field .lab{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;font-weight:600;margin-bottom:6px}
+.field .lab span{font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+input[type="range"]{width:100%;accent-color:var(--primary);height:26px;cursor:pointer}
+input[type="search"],input[type="number"],input[type="text"],input[type="password"],select,textarea{
+  width:100%;background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+  border-radius:10px;padding:9px 11px;font:inherit;font-size:13px
+}
+textarea{resize:vertical;min-height:78px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--primary);outline-offset:1px}
+.hint{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.45}
+.scenario{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;
+  background:var(--primary-weak);border-radius:10px;padding:9px 12px;font-size:12px;color:var(--text)
+}
+.scenario b{font-weight:700}
+
+/* patient lens */
+.meter{height:12px;border-radius:999px;background:var(--border);overflow:hidden;margin-top:10px}
+.meter div{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--crimson),var(--amber),var(--accent));transition:width .6s cubic-bezier(.2,.7,.2,1)}
+.lens-msg{margin-top:12px;font-size:13px;line-height:1.5;padding:12px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border)}
+.lens-msg b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;font-weight:700}
+
+/* budget */
+.budget-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:18px}
+.alloc-row{display:grid;grid-template-columns:112px 1fr 46px;gap:10px;align-items:center;margin-bottom:8px}
+.alloc-row span{font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
+.alloc-row output{font-size:11.5px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.budget-result{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--surface-2)}
+.budget-result .kv{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:5px 0;border-bottom:1px dashed var(--border)}
+.budget-result .kv:last-child{border-bottom:0}
+.budget-result .kv b{font-variant-numeric:tabular-nums}
+
+/* clinical */
+.clinical{display:grid;grid-template-columns:.9fr 1.6fr;gap:16px;align-items:start}
+.pick-list{display:grid;gap:6px;margin-top:12px}
+.pick{
+  display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+  background:transparent;border:1px solid transparent;border-radius:10px;padding:9px 10px;cursor:pointer;
+  transition:background .15s ease,border-color .15s ease
+}
+.pick:hover{background:var(--surface-2);border-color:var(--border)}
+.pick[aria-pressed="true"]{background:var(--primary-weak);border-color:color-mix(in srgb,var(--primary) 35%,var(--border))}
+.pick .dot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--c)}
+.pick .nm{font-size:12.5px;font-weight:600}
+.pick .rt{margin-left:auto;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bullets{display:grid;gap:10px;margin-top:4px}
+.bullet{border:1px solid var(--border);border-radius:12px;padding:12px 14px;background:var(--surface-2)}
+.bullet .tag{
+  display:inline-block;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:2px 7px;border-radius:6px;margin-bottom:6px;background:var(--primary-weak);color:var(--primary)
+}
+.bullet .tag.therapeutics{background:color-mix(in srgb,var(--accent) 14%,transparent);color:color-mix(in srgb,var(--accent) 70%,var(--text))}
+.bullet .tag.diagnosis{background:color-mix(in srgb,var(--amber) 16%,transparent);color:color-mix(in srgb,var(--amber) 75%,var(--text))}
+.bullet p{font-size:13px;line-height:1.5}
+.bullet .src{font-size:11px;color:var(--muted);margin-top:6px}
+.case{
+  margin-top:14px;border-radius:12px;padding:14px 16px;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--crimson) 8%,var(--surface)),var(--surface));
+  border:1px solid color-mix(in srgb,var(--crimson) 22%,var(--border))
+}
+.case h4{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--crimson);margin-bottom:6px}
+.case p{font-size:13px;line-height:1.55}
+.case .src{font-size:11px;color:var(--muted);margin-top:6px}
+.action{
+  margin-top:12px;display:flex;gap:10px;align-items:flex-start;
+  background:color-mix(in srgb,var(--accent) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 28%,var(--border));
+  border-radius:12px;padding:12px 14px;font-size:13px
+}
+.action b{color:color-mix(in srgb,var(--accent) 70%,var(--text))}
+details.sources{margin-top:14px;font-size:11.5px;color:var(--muted)}
+details.sources summary{cursor:pointer;font-weight:600;color:var(--text);font-size:12px}
+details.sources p{margin-top:8px;line-height:1.55}
+
+/* ---------------------------------------------------------------- table */
+.tools{display:grid;grid-template-columns:1.2fr .9fr auto auto auto;gap:10px;align-items:center;margin-bottom:12px}
+.tools .btn,.tools label.btn{justify-self:start}
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;min-width:720px;font-size:13px}
+thead th{
+  position:sticky;top:0;background:var(--surface-2);text-align:left;font-size:10.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);font-weight:700;padding:10px 12px;border-bottom:1px solid var(--border);
+  white-space:nowrap;cursor:pointer;user-select:none
+}
+thead th:hover{color:var(--text)}
+thead th .ar{opacity:.5;margin-left:4px}
+thead th[aria-sort] .ar{opacity:1;color:var(--primary)}
+tbody td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tbody tr{cursor:pointer;transition:background .12s ease}
+tbody tr:hover{background:var(--surface-2)}
+tbody tr[aria-selected="true"]{background:var(--primary-weak)}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;
+  padding:3px 8px;border-radius:999px;border:1px solid transparent;white-space:nowrap
+}
+.badge .d{width:6px;height:6px;border-radius:50%;background:currentColor}
+.badge.over{color:var(--over);background:color-mix(in srgb,var(--over) 10%,transparent);border-color:color-mix(in srgb,var(--over) 24%,transparent)}
+.badge.under{color:var(--warn);background:color-mix(in srgb,var(--amber) 13%,transparent);border-color:color-mix(in srgb,var(--amber) 30%,transparent)}
+.badge.severe{color:var(--coral);background:color-mix(in srgb,var(--coral) 11%,transparent);border-color:color-mix(in srgb,var(--coral) 28%,transparent)}
+.badge.ignored{color:var(--crimson);background:color-mix(in srgb,var(--crimson) 10%,transparent);border-color:color-mix(in srgb,var(--crimson) 26%,transparent)}
+.notice{font-size:12px;padding:9px 12px;border-radius:10px;margin-bottom:10px;border:1px solid var(--border);background:var(--surface-2)}
+.notice.err{color:var(--crimson);border-color:color-mix(in srgb,var(--crimson) 35%,var(--border))}
+
+/* ---------------------------------------------------------------- policy */
+.policy{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.policy .num{
+  font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--primary);
+  background:var(--primary-weak);border-radius:8px;padding:3px 8px;display:inline-block;margin-bottom:10px
+}
+.policy h3{font-size:15px;margin-bottom:8px}
+.policy p{font-size:12.5px;color:var(--muted);line-height:1.55}
+.policy .why{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);font-size:11.5px}
+
+/* ---------------------------------------------------------------- ai */
+.ai-body{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.ai-out{
+  margin-top:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);
+  padding:14px;font-size:13px;line-height:1.6;min-height:110px;white-space:pre-wrap
+}
+.ai-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.ai-status{font-size:11.5px;margin-top:8px;min-height:16px}
+.ai-status.err{color:var(--crimson)}
+.ai-status.ok{color:var(--ok)}
+.ai-note{margin-top:10px;font-size:11px;color:var(--muted)}
+
+/* ---------------------------------------------------------------- tour */
+.tour-target{position:relative;z-index:70;background:var(--bg);border-radius:14px;box-shadow:0 0 0 9999px rgba(9,11,26,.58)}
+.tourbar{
+  position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:90;
+  width:min(620px,calc(100vw - 24px));background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;box-shadow:0 20px 60px rgba(9,11,26,.35);padding:16px 18px
+}
+.tourbar .tt{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.tourbar b{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--primary)}
+.tourbar h4{font-size:15px;margin:2px 0 4px}
+.tourbar p{font-size:12.5px;color:var(--muted);line-height:1.5}
+.tourbar .row{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+
+/* ---------------------------------------------------------------- footer */
+footer{border-top:1px solid var(--border);padding:26px 0 34px;margin-top:10px}
+footer p{font-size:11.5px;color:var(--muted);line-height:1.6;max-width:100ch}
+footer .brandline{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700;font-size:13px}
+
+/* ---------------------------------------------------------------- responsive */
+@media (max-width:1000px){
+  .kpis{grid-template-columns:1fr 1fr}
+  .chart-grid{grid-template-columns:1fr}
+  .budget-grid,.clinical,.two-col{grid-template-columns:1fr}
+  .policy{grid-template-columns:1fr}
+  .tools{grid-template-columns:1fr 1fr}
+  .topnav{display:none}
+}
+@media (max-width:620px){
+  .kpis{grid-template-columns:1fr}
+  .tools{grid-template-columns:1fr}
+  .alloc-row{grid-template-columns:96px 1fr 42px}
+  .donuts{grid-template-columns:1fr}
+  .brand span{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+}
+@media print{
+  .topbar,.tourbar,#ai{display:none}
+}
 </style>
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a>
 
-<header><div class="shell bar">
-  <a class="brand" href="#top">The Reference Gap<span>Genomic equity atlas</span></a>
-  <nav><a href="#atlas">Atlas</a><a href="#bedside">Bedside</a><a href="#audit">Audit</a><a href="#sources">Sources</a></nav>
-</div></header>
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand" href="#hero">
+      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M10 3c0 6 12 8 12 14s-12 8-12 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M22 3c0 6-12 8-12 14s12 8 12 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" opacity=".5"/>
+        <path d="M12 9h8M11.5 16h9M12 23h8" stroke="currentColor" stroke-width="1.8" opacity=".75"/>
+      </svg>
+      <div><b>Genomic Blindspots</b><span>Equity dashboard</span></div>
+    </a>
+    <nav class="topnav" aria-label="Sections">
+      <a href="#heatmap">Heatmap</a>
+      <a href="#charts">Charts</a>
+      <a href="#controls">Simulators</a>
+      <a href="#clinical">Clinical</a>
+      <a href="#data">Data</a>
+      <a href="#policy">Policy</a>
+    </nav>
+    <button class="btn primary small" id="tourBtn" type="button">Start 2-minute tour</button>
+  </div>
+</header>
 
-<main id="top" class="shell">
-  <section style="border-top:0">
-    <p class="eyebrow">Genomic equity · a data atlas</p>
-    <h1>The human genome was read mostly from <em>one part</em> of humanity.</h1>
-    <p class="lede"><strong>88.4%</strong> of the participants recorded in genome-wide association studies are of
-      European ancestry. Africa — home to <strong>18.6%</strong> of the world's people — accounts for
-      <strong>0.29%</strong> of that record.</p>
+<main id="main">
+<!-- ================================================================ HERO -->
+<section class="wrap hero" id="hero">
+  <p class="eyebrow">Genomic Equity Challenge</p>
+  <h1>75% of the world’s genomic data comes from <em>16% of its people</em>.</h1>
+  <p class="lede">The biobank record is not a sample of humanity — it is a sample of Europe, plus fragments.
+    That imbalance propagates into the tests, scores and drugs that clinicians use every day.
+    <strong>Select any group</strong> anywhere on this page to follow the gap from the dataset to the bedside.</p>
 
-    <div class="stats">
-      <div><b>88.4<i>%</i></b><span>of GWAS participants are of European ancestry</span></div>
-      <div><b>0.29<i>%</i></b><span>are continental African — fewer than 1 in 300</span></div>
-      <div><b>9.7<i>×</i></b><span>over-representation of Europe relative to population</span></div>
+  <div class="kpis">
+    <div class="card kpi hero-kpi">
+      <div class="big" data-count="75" data-suffix="%">0%</div>
+      <div class="lbl">of the genomic record comes from populations that are just 16% of the world</div>
+      <div class="mini">European ancestry · representation ratio 4.69×</div>
+    </div>
+    <div class="card kpi">
+      <div class="gauge-wrap">
+        <svg class="gauge" viewBox="0 0 100 100" aria-hidden="true">
+          <circle class="track" cx="50" cy="50" r="42"></circle>
+          <circle class="val" id="gaugeArc" cx="50" cy="50" r="42" stroke-dasharray="263.9" stroke-dashoffset="155.7"></circle>
+        </svg>
+        <div>
+          <div class="big" id="equityBig">41<small>/100</small></div>
+          <div class="lbl">Equity score</div>
+        </div>
+      </div>
+      <div class="mini" id="equityNote">Ideal parity would score 100</div>
+    </div>
+    <div class="card kpi">
+      <div class="big"><span data-count="5">0</span><small> of 6</small></div>
+      <div class="lbl">ancestry groups are under-represented relative to their share of the world</div>
+      <div class="mini" id="underNote">Only European ancestry is over-indexed</div>
+    </div>
+    <div class="card kpi">
+      <div class="big" id="spreadBig">28×</div>
+      <div class="lbl">gap between the best- and worst-represented groups</div>
+      <div class="mini" id="spreadNote">European 4.69× · Indigenous/Other 0.17×</div>
+    </div>
+  </div>
+
+  <p class="takeaway" id="takeaway"><b>In one sentence:</b> the populations least represented in genomic
+    datasets are the same populations most likely to receive a test, a score or a drug that was never
+    validated on people like them.</p>
+</section>
+
+<!-- ================================================================ HEATMAP -->
+<section class="wrap block" id="heatmap">
+  <div class="sec-head">
+    <div>
+      <h2>The whole inequality in one picture</h2>
+      <p>Each tile’s <strong>area</strong> is that group’s share of the world population. Its <strong>colour</strong>
+        is how well the dataset represents them. Click a tile to follow that group through the page.</p>
+    </div>
+    <span class="chip hot" id="heatChip">6 groups · 1 over-indexed</span>
+  </div>
+  <div class="card">
+    <div class="treemap" id="treemap" role="group" aria-label="Treemap of ancestry groups, area sized by world population share and colour by representation ratio"></div>
+    <div class="tmap-legend">
+      <span>Under-represented</span>
+      <div class="tmap-scale" aria-hidden="true"></div>
+      <span>Over-represented</span>
+      <span class="muted" style="margin-left:auto">Ratio scale: 0.17× → 1× (fair) → 4.69×</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ CHARTS -->
+<section class="wrap block" id="charts">
+  <div class="sec-head">
+    <div>
+      <h2>Population share vs dataset share</h2>
+      <p>Every chart is live. Click a bar, a doughnut segment or a legend label to select an ancestry group.</p>
+    </div>
+    <span class="chip" id="chartChip">Showing the dataset as reported</span>
+  </div>
+  <div class="chart-grid">
+    <div class="card">
+      <div class="card-head"><div><h3>Who is in the world, who is in the data</h3>
+        <p>Grouped bars. The amber-to-crimson bars are groups the dataset under-serves.</p></div></div>
+      <div class="chart-box"><canvas id="chartGrouped" aria-label="Grouped bar chart of population share versus dataset share by ancestry" role="img"></canvas></div>
+      <div class="legend-row">
+        <span><i class="sw" style="--c:#CBD5E1"></i>World population share</span>
+        <span><i class="sw" style="--c:var(--over)"></i>Dataset share (coloured by representation)</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><h3>Representation ratio</h3>
+        <p>1.0 is fair. Below the dashed line, a group is under-sampled relative to its population.</p></div></div>
+      <div class="chart-box"><canvas id="chartRatio" aria-label="Bar chart of representation ratio by ancestry with reference line at one" role="img"></canvas></div>
+      <div class="legend-row"><span><i class="sw" style="--c:var(--amber)"></i>Under 1× · blindspot</span>
+        <span><i class="sw" style="--c:var(--over)"></i>Over 1× · over-indexed</span></div>
+    </div>
+    <div class="card" style="grid-column:1/-1">
+      <div class="card-head"><div><h3>100 people in the world · 100 genomes in the biobank</h3>
+        <p>Two compositions of the same 100 units. Hover for exact shares.</p></div></div>
+      <div class="donuts">
+        <div class="donut"><canvas id="chartWorld" aria-label="Doughnut chart of world population composition" role="img"></canvas>
+          <div class="donut-center"><b>100</b><span>people alive</span></div></div>
+        <div class="donut"><canvas id="chartData" aria-label="Doughnut chart of biobank dataset composition" role="img"></canvas>
+          <div class="donut-center"><b>100</b><span>genomes sequenced</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ CONTROLS -->
+<section class="wrap block" id="controls">
+  <div class="sec-head">
+    <div><h2>Two live inputs</h2>
+      <p>What if the dataset were rebalanced — and what does the current data mean for the patient in front of you?</p></div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-head"><div><h3>Rebalance the dataset</h3>
+        <p>Blend the reported dataset toward true population shares. Every chart, the table and the equity score update live.</p></div>
+        <span class="chip" id="rebalChip">0%</span></div>
+      <label class="field" for="rebalance">
+        <span class="lab">Shift toward population parity <span id="rebalVal">0%</span></span>
+        <input type="range" id="rebalance" min="0" max="100" step="1" value="0"
+          aria-describedby="rebalHint">
+      </label>
+      <p class="hint" id="rebalHint">At 0% you see the dataset as reported. At 100% every group is represented
+        in proportion to its population — a hypothetical world, not a real one.</p>
+      <div class="scenario">
+        <span>Scenario</span><b id="scenarioLabel">As reported</b>
+        <button class="btn small ghost" id="resetScenario" type="button">Reset</button>
+      </div>
     </div>
 
-    <div class="duo">
+    <div class="card">
+      <div class="card-head"><div><h3>Patient lens</h3>
+        <p>Pick the ancestry of the patient in front of you. The meter is a representation-adjusted confidence
+          proxy — not a validated clinical score.</p></div></div>
+      <label class="field" for="lensSelect">
+        <span class="lab">Patient ancestry</span>
+        <select id="lensSelect"></select>
+      </label>
+      <div class="lab" style="margin-top:14px;font-size:12.5px;font-weight:600">
+        Representation-adjusted confidence <span id="lensPct" class="num">—</span></div>
+      <div class="meter" role="img" id="lensMeter" aria-label="Model confidence meter"><div style="width:0%"></div></div>
+      <div class="lens-msg" id="lensMsg"><b>Select a group</b>to see what the data gap means for this patient.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ BUDGET -->
+<section class="wrap block" id="budget">
+  <div class="sec-head">
+    <div><h2>Where should the next 100,000 genomes go?</h2>
+      <p>Add new sequencing to a 100,000-genome baseline and watch the equity score move. Allocation is
+        auto-normalised to 100%.</p></div>
+  </div>
+  <div class="card">
+    <div class="budget-grid">
       <div>
-        <h4>Everyone in the genomic record<br><span style="color:var(--faint)">by study-reported ancestry</span></h4>
-        <div class="grid" id="gridA" aria-hidden="true"></div>
-        <p class="cap" id="capA">100 participants. 0.29% are continental African — no full square.</p>
+        <label class="field" for="budget">
+          <span class="lab">New genomes to sequence <span id="budgetLabel">100,000</span></span>
+          <input type="number" id="budget" min="1000" max="5000000" step="1000" value="100000" inputmode="numeric">
+        </label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+          <button class="btn small" id="bestBtn" type="button">Best allocation for fairness</button>
+          <button class="btn small ghost" id="equalBtn" type="button">Spread equally</button>
+          <button class="btn small ghost" id="zeroBtn" type="button">All to blindspots</button>
+        </div>
+        <div id="allocRows" style="margin-top:16px"></div>
+        <p class="hint">Baseline assumption: the six shares describe a 100,000-genome dataset. New genomes are
+          added on top; the equity score is recalculated from the resulting shares.</p>
       </div>
       <div>
-        <h4>Everyone alive today<br><span style="color:var(--faint)">by world region</span></h4>
-        <div class="grid" id="gridB" aria-hidden="true"></div>
-        <p class="cap" id="capB">100 people. 5.3 squares are Northern America and Oceania combined.</p>
+        <div class="budget-result">
+          <div class="kv"><span>Equity score before</span><b id="bBefore">41.0</b></div>
+          <div class="kv"><span>Equity score after</span><b id="bAfter">—</b></div>
+          <div class="kv"><span>Change</span><b id="bDelta">—</b></div>
+          <div class="kv"><span>Still under-represented</span><b id="bUnder">—</b></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+          <button class="btn primary small" id="applyBudget" type="button">Apply this allocation to the dashboard</button>
+          <button class="btn small ghost" id="clearBudget" type="button">Clear</button>
+        </div>
+        <div id="budgetNotice" class="hint"></div>
       </div>
     </div>
+  </div>
+</section>
 
-    <div class="legend" id="legend"></div>
-    <p class="note" id="heroNote">Two different classification systems: ancestry labels from studies on the left, world regions on the
-      right. Aligning them is approximate by construction — which is itself part of the problem.</p>
-  </section>
-
-  <section id="atlas">
-    <h2>The record is not a sample of humanity</h2>
-    <p class="intro">A ratio of 1× would mean a region holds the same share of the genomic record as it does of world
-      population. Nothing is close. Select a region to see its share of each.</p>
-    <div class="rows" id="rows"></div>
-    <p class="note">Shares are quotients of published percentages, not per-capita participant counts. Ancestry is not
-      residence: a European-ancestry participant in Texas counts toward Europe here.</p>
-  </section>
-
-  <section id="bedside">
-    <h2>A blind spot arrives as a test result</h2>
-    <p class="intro">Four published measurements of what missing data does inside a clinic.</p>
-    <div class="cards">
-      <div class="card"><b>39.4%</b><h3>The score was trained on someone else</h3>
-        <p>A European-derived polygenic score retains 39.4% of its performance in African-ancestry patients, 46.6% in
-        East Asian and 51.3% in South Asian patients. Martin et al. measured a 4.9-fold accuracy gap.</p></div>
-      <div class="card"><b>45.5%</b><h3>More testing, less certainty</h3>
-        <p>Among 493,515 people tested for hereditary cancer, 45.5% of Black patients received a variant of uncertain
-        significance and nothing else — against 32.4% of non-Hispanic White patients.</p></div>
-      <div class="card"><b>25.3%</b><h3>The test stops where the reference stops</h3>
-        <p>The 23-variant CFTR panel finds both causal variants in 71.9% of white patients and 25.3% of Asian
-        patients. A 329-variant panel lifts that to 86.0% and 53.9%.</p></div>
-      <div class="card"><b>191</b><h3>The "rare" allele was never rare</h3>
-        <p>Across 23 CPIC guidelines, 191 alleles were absent or unreported in the European reference group but
-        present elsewhere. HLA-B*15:02 is carried by 6.9% of East Asians.</p></div>
+<!-- ================================================================ CLINICAL -->
+<section class="wrap block" id="clinical">
+  <div class="sec-head">
+    <div><h2>What the blindspot does at the bedside</h2>
+      <p>Select a group — here or anywhere on the page — to see the clinical hazards, a documented case and
+        what a clinician should actually do.</p></div>
+    <span class="chip" id="clinicalChip">European</span>
+  </div>
+  <div class="clinical">
+    <div class="card">
+      <h3 style="font-size:14px">Ancestry groups</h3>
+      <div class="pick-list" id="pickList" role="group" aria-label="Select an ancestry group"></div>
+      <p class="hint" style="margin-top:14px">Representation ratio is shown for the current scenario.</p>
     </div>
-  </section>
+    <div class="card" id="clinicalPanel" aria-live="polite"></div>
+  </div>
+</section>
 
-  <section id="audit">
-    <h2>Put a cohort through a representation audit</h2>
-    <p class="intro">Move the sliders, or load a real cohort. The audit compares the mix to world population and
-      estimates how much of a European-trained score would survive.</p>
-    <div id="sliders"></div>
-    <div class="presets" id="presets"></div>
-    <div class="scores">
-      <div><b id="sRep">—</b><span>Representation against world population shares, 0–100</span></div>
-      <div><b id="sPor">—</b><span>Expected retention of a European-trained score</span></div>
-      <div><b id="sGrp">—</b><span>Effective ancestry groups (inverse Simpson)</span></div>
+<!-- ================================================================ DATA TABLE -->
+<section class="wrap block" id="data">
+  <div class="sec-head">
+    <div><h2>The audit table</h2>
+      <p>Sort by any column, filter by status or name, export what you see, or audit your own dataset.</p></div>
+    <span class="chip" id="rowChip">6 rows</span>
+  </div>
+  <div class="card">
+    <div class="tools">
+      <label class="sr-only" for="search">Search ancestry groups</label>
+      <input id="search" type="search" placeholder="Search ancestry…" autocomplete="off">
+      <label class="sr-only" for="statusFilter">Filter by status</label>
+      <select id="statusFilter">
+        <option value="all">All statuses</option>
+        <option>Highly over-indexed</option>
+        <option>Underrepresented</option>
+        <option>Severe blindspot</option>
+        <option>Completely ignored</option>
+      </select>
+      <button class="btn small" id="exportBtn" type="button">Export CSV</button>
+      <label class="btn small" for="csvInput" tabindex="0" role="button">Load CSV
+        <input id="csvInput" type="file" accept=".csv,text/csv" hidden>
+      </label>
+      <button class="btn small ghost" id="resetData" type="button">Reset data</button>
     </div>
-    <p class="note">A cohort can score 94% on portability and 21/100 on representation: it works beautifully for the
-      people it contains. That is the whole problem.</p>
-  </section>
+    <div id="tableNotice"></div>
+    <div class="table-wrap">
+      <table id="table">
+        <thead><tr id="theadRow"></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <p class="hint">CSV format: <code>group,population,dataset</code> — one row per group, shares in percent.
+      Uploaded shares are normalised to 100% and flagged in the notice above.</p>
+  </div>
+</section>
 
-  <section id="sources">
-    <h2>Method</h2>
-    <p class="intro">This is an interactive reading of published data — no new cohort, no individual-level analysis.
-      Derived figures are arithmetic on published values.</p>
-    <p class="note" style="border:0;padding:0">GWAS Diversity Monitor (checked 23 Oct 2026) · UN World Population
-      Prospects 2024 · Moreno-Grau et al. 2024 · Martin et al. 2019 · Castillo et al. 2024 · McGarry et al. 2023 ·
-      CPIC · HPRC. Regional comparisons use ancestry labels, not residence. The audit is an illustrative index, not a
-      clinical instrument.</p>
-  </section>
+<!-- ================================================================ POLICY -->
+<section class="wrap block" id="policy">
+  <div class="sec-head">
+    <div><h2>Three things a policymaker can mandate</h2>
+      <p>Each recommendation is concrete enough to write into a procurement rule or an approval pathway.</p></div>
+  </div>
+  <div class="policy">
+    <div class="card">
+      <span class="num">01</span>
+      <h3>Validate across ancestries before approval</h3>
+      <p>Clinical AI and diagnostic tools should be required to show performance by ancestry group — not a
+        single pooled metric — before they enter a health system.</p>
+      <p class="why"><b>Why:</b> a pooled accuracy can look strong while the worst-served group is far below it.
+        Polygenic scores lose roughly half their accuracy outside European ancestry.</p>
+    </div>
+    <div class="card">
+      <span class="num">02</span>
+      <h3>Fund community-partnered sequencing</h3>
+      <p>Sequence under-represented populations with community governance, Indigenous data sovereignty and
+        benefit-sharing agreements, not extractive sample collection.</p>
+      <p class="why"><b>Why:</b> representation without control reproduces the same power imbalance. Consent,
+        custody and authorship are part of the dataset.</p>
+    </div>
+    <div class="card">
+      <span class="num">03</span>
+      <h3>Mandate ancestry reporting in datasets and model cards</h3>
+      <p>Every released dataset and model should publish its composition, known gaps and subgroup performance
+        in a standard, machine-readable form.</p>
+      <p class="why"><b>Why:</b> you cannot audit what is not reported. Composition disclosure turns an invisible
+        bias into a procurement condition.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ AI -->
+<section class="wrap block" id="ai">
+  <div class="card">
+    <details id="aiDetails">
+      <summary style="cursor:pointer;font-weight:700;font-size:15px">Optional: ask Gemini to explain the gap
+        <span class="muted" style="font-weight:500;font-size:12px"> — bring your own API key</span></summary>
+      <div class="ai-body">
+        <div>
+          <label class="field" for="apiKey"><span class="lab">Gemini API key</span>
+            <input id="apiKey" type="password" placeholder="AIza…" autocomplete="off" spellcheck="false"></label>
+          <label class="field" for="modelName"><span class="lab">Model</span>
+            <input id="modelName" type="text" value="gemini-2.5-flash" spellcheck="false"></label>
+          <label class="field" for="aiQuestion"><span class="lab">Your question (optional)</span>
+            <textarea id="aiQuestion" placeholder="e.g. What should I tell a patient whose ancestry is barely in the reference data?"></textarea></label>
+          <div class="ai-actions">
+            <button class="btn small" data-mode="clinician" type="button">Explain for a clinician</button>
+            <button class="btn small" data-mode="policymaker" type="button">Explain for a policymaker</button>
+            <button class="btn small" data-mode="patient" type="button">Explain for a patient</button>
+          </div>
+          <p class="ai-status" id="aiStatus" role="status"></p>
+        </div>
+        <div>
+          <div class="ai-out" id="aiOut">The explanation will appear here. The key is used only for this
+request, in this tab — it is never stored, logged or sent anywhere else.</div>
+          <p class="ai-note">AI-generated; verify before use. Not medical advice. The model receives only the
+            aggregate figures shown on this page — no patient data.</p>
+        </div>
+      </div>
+    </details>
+  </div>
+</section>
 </main>
 
-<footer><div class="shell">The Reference Gap · built from public data · no patient records · no API keys</div></footer>
+<footer>
+  <div class="wrap">
+    <div class="brandline">
+      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true" style="width:20px;height:20px">
+        <path d="M10 3c0 6 12 8 12 14s-12 8-12 14M22 3c0 6-12 8-12 14s12 8 12 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      Genomic Blindspots
+    </div>
+    <p>Population shares and dataset shares are rounded figures from the IMET Genomic Equity Challenge brief.
+      For education only; not medical advice.</p>
+  </div>
+</footer>
 
-<div class="dragons" aria-hidden="true" id="dragons"></div>
-<button id="oracleBtn" type="button"></button>
-<aside id="oracle" role="dialog" aria-label="Dragon Oracle"></aside>
+<div class="tourbar" id="tourbar" hidden>
+  <div class="tt"><b id="tourStep">Step 1 of 5</b>
+    <button class="btn small ghost" id="tourClose" type="button">Close</button></div>
+  <h4 id="tourTitle">The problem</h4>
+  <p id="tourText">…</p>
+  <div class="row">
+    <button class="btn small" id="tourBack" type="button">Back</button>
+    <button class="btn small primary" id="tourNext" type="button">Next</button>
+  </div>
+</div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
-const GROUPS=[
-  {id:'eur',name:'European',record:88.38,people:9.13,color:'var(--eur)',c:'#e0aa55',note:'The ancestry of 88 in 100 participants, and of 9 in 100 people alive.'},
-  {id:'asi',name:'Asian',record:6.06,people:58.89,color:'var(--asi)',c:'#56b3c4',note:'Six in 100 participants; 59 in 100 people. The largest gap on the board.'},
-  {id:'afr',name:'African',record:2.98,people:18.56,color:'var(--afr)',c:'#79bd86',note:'Three in 100 participants, most of them in the Americas — against 19 in 100 people.'},
-  {id:'lat',name:'Hispanic / LatAm',record:1.26,people:8.13,color:'var(--lat)',c:'#dd9070',note:'One in 100 participants, where admixture breaks single-ancestry tools hardest.'}
+(function () {
+'use strict';
+
+/* ================================================================ data */
+const BASE = [
+  { id:'eur', name:'European',        pop:16, ds:75 },
+  { id:'eas', name:'East Asian',      pop:21, ds:8  },
+  { id:'sas', name:'South Asian',     pop:24, ds:6  },
+  { id:'afr', name:'African',         pop:18, ds:5  },
+  { id:'lat', name:'Latino/Hispanic', pop:9,  ds:4  },
+  { id:'ind', name:'Indigenous/Other',pop:12, ds:2  }
 ];
-const OTHER=1.33, REST=5.28;
-const DRAGON=[
- '88.4% of everyone ever recorded in a GWAS is of European ancestry. Your species has sequenced a great deal of itself and very little of the rest of itself.',
- 'Continental Africans are 0.29% of the genomic record and 18.6% of the world. That is not a rounding error. That is a blind spot with a heartbeat.',
- 'The 23-variant CFTR panel finds both causal variants in 71.9% of white patients and 25.3% of Asian patients. The panel did not change. The patient did.',
- 'A European-trained polygenic score keeps 39.4% of its performance in African-ancestry patients. Imagine a map that is right 39% of the time and calls itself a map.',
- 'Across 23 CPIC guidelines, 191 alleles were absent or unreported in the European reference group but present elsewhere. You cannot prescribe what you have not looked for.',
- 'GRCh38 draws about 70% of its sequence from a single person. One mortal, standing in for eight billion.',
- 'H3Africa recruited 100,338 people and produced 700 papers. Its funding ended in 2022. Empires are cheaper to start than to keep.',
- 'You built the map before you walked the ground, then called the blank spaces "unknown". I have been alive a long time. That is not how unknown works.'
-];
+const GROUP_COLOR = { eur:'#3B3FD8', eas:'#14B8A6', sas:'#8B5CF6', afr:'#F59E0B', lat:'#F43F5E', ind:'#0EA5E9' };
+const PALETTE = ['#3B3FD8','#14B8A6','#8B5CF6','#F59E0B','#F43F5E','#0EA5E9','#84CC16','#EC4899'];
+const colorFor = (id, i) => GROUP_COLOR[id] || PALETTE[i % PALETTE.length];
+const BASE_TOTAL = 100000;
 
-/* largest-remainder apportionment so each grid sums to exactly 100 */
-function apportion(values,total){
-  const sum=values.reduce((a,b)=>a+b,0)||1;
-  const scaled=values.map(v=>v/sum*total);
-  const out=scaled.map(Math.floor);
-  let rem=total-out.reduce((a,b)=>a+b,0);
-  const order=scaled.map((v,i)=>({i,f:v-Math.floor(v)})).sort((a,b)=>b.f-a.f);
-  for(let k=0;rem>0;k++){out[order[k%order.length].i]++;rem--;}
-  return out;
-}
-function cellsFor(list){
-  const counts=apportion(list.map(x=>x.value),100);
-  const cells=[];
-  list.forEach((item,i)=>{for(let n=0;n<counts[i];n++)cells.push(item);});
-  return cells;
-}
-
-const recordCells=cellsFor(GROUPS.map(g=>({id:g.id,value:g.record})).concat([{id:'oth',value:OTHER}]));
-const peopleCells=cellsFor(GROUPS.map(g=>({id:g.id,value:g.people})).concat([{id:'rest',value:REST}]));
-const colorOf=id=>id==='oth'?'var(--oth)':id==='rest'?'#8b95a5':GROUPS.find(g=>g.id===id).color;
-
-function paint(el,cells){
-  el.innerHTML=cells.map(c=>`<span class="cell" style="--c:${colorOf(c.id)}"></span>`).join('');
-}
-paint(document.getElementById('gridA'),recordCells);
-paint(document.getElementById('gridB'),peopleCells);
-
-let focus=null;
-const legend=document.getElementById('legend');
-legend.innerHTML=GROUPS.map(g=>
-  `<button type="button" data-id="${g.id}"><span class="dot" style="--c:${g.color}"></span>${g.name} · ${g.record}%</button>`
-).join('')+`<span style="display:inline-flex;align-items:center;gap:7px;font:10px var(--mono);color:var(--faint);padding:5px 0"><span class="dot" style="--c:var(--oth)"></span>Other · ${OTHER}%</span>`;
-
-function setFocus(id){
-  focus=focus===id?null:id;
-  document.querySelectorAll('.cell').forEach(c=>c.classList.remove('dim'));
-  legend.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.id===focus));
-  const capA=document.getElementById('capA'),capB=document.getElementById('capB');
-  if(!focus){
-    capA.textContent='100 participants. 0.29% are continental African — no full square.';
-    capB.textContent='100 people. 5.3 squares are Northern America and Oceania combined.';
-    document.getElementById('heroNote').textContent='Two different classification systems: ancestry labels from studies on the left, world regions on the right. Aligning them is approximate by construction — which is itself part of the problem.';
-    return;
+const CLINICAL = {
+  eur: {
+    headline:'The reference population — over-studied, and still not a universal baseline.',
+    bullets:[
+      { tag:'Risk modelling', text:'Polygenic scores are built and validated mostly in this group. The same score is reported as 2.5× less accurate in East Asian, 1.7× in South Asian and 4.9× in African ancestry.', src:'Martin et al., Nature Genetics 2019' },
+      { tag:'Diagnosis', text:'Variant databases are dominated by European-ancestry patients, so a variant of uncertain significance is less likely here — not because the patient is better understood, but because more similar variants have been seen.', src:'Popejoy &amp; Fullerton, Nature 2016' },
+      { tag:'Therapeutics', text:'Alleles that matter elsewhere are rare here (HLA-B*15:02 is uncommon in Europeans), so screening is often not routine. That is reasonable locally and wrong as a global default.', src:'CPIC HLA-B*15:02 guideline, 2018' }
+    ],
+    caseStudy:{ title:'The score that does not travel',
+      text:'A polygenic score built in European-ancestry biobank data retained only 39.4% of its performance in African-ancestry participants across 14 conditions. Deployed without revalidation, it would systematically under-flag risk in the patients already least served.',
+      src:'Moreno-Grau et al., 2024' },
+    action:'Publish the ancestry composition of the training data with every score, and revalidate before using it in a population the model was not built on.'
+  },
+  eas: {
+    headline:'Where a standard drug becomes a severe skin reaction.',
+    bullets:[
+      { tag:'Therapeutics', text:'HLA-B*15:02 is carried by roughly 6.9% of East Asian people. Carriers face a sharply elevated risk of Stevens–Johnson syndrome and toxic epidermal necrolysis from carbamazepine; CPIC advises avoiding the drug and the FDA label recommends screening in Han Chinese patients.', src:'CPIC 2018; FDA carbamazepine labelling' },
+      { tag:'Therapeutics', text:'CYP2C19 loss-of-function alleles are more frequent in East Asian and Pacific Islander populations, reducing activation of clopidogrel and leaving patients with weaker platelet inhibition at standard doses.', src:'CPIC clopidogrel guidance' },
+      { tag:'Risk modelling', text:'Polygenic scores transfer poorly: accuracy is about 2.5× lower than in European-ancestry populations, so a “low-risk” score is weaker reassurance than it appears.', src:'Martin et al., 2019' }
+    ],
+    caseStudy:{ title:'Carbamazepine and the missing pre-test',
+      text:'A patient of Han Chinese ancestry starts carbamazepine without HLA-B*15:02 testing. A genotype that is rare in the reference population — and therefore rarely screened for — is common enough here to justify a test that prevents a life-threatening reaction.',
+      src:'CPIC HLA-B*15:02 guideline, 2018' },
+    action:'Order HLA-B*15:02 before carbamazepine or oxcarbazepine in at-risk ancestry; consider an alternative antiplatelet when CYP2C19 loss-of-function is likely.'
+  },
+  sas: {
+    headline:'Guidelines recognise the risk. The data do not measure it.',
+    bullets:[
+      { tag:'Risk modelling', text:'South Asian ancestry is recognised in US cholesterol guidance as a risk-enhancing factor, yet polygenic scores trained in Europeans keep only about half their performance in South Asian populations — so the score understates a risk the guideline already flags.', src:'2018 AHA/ACC cholesterol guideline; Martin et al., 2019' },
+      { tag:'Diagnosis', text:'A MYBPC3 founder variant accounts for a substantial share of hypertrophic cardiomyopathy in South Asian populations. A panel optimised on European variation may not prioritise it, delaying a diagnosis that changes family screening.', src:'Published MYBPC3 literature — verify before citing' },
+      { tag:'Therapeutics', text:'Clopidogrel response varies with CYP2C19 genotype, and allele frequencies differ from the European reference used to set standard dosing.', src:'CPIC clopidogrel guidance' }
+    ],
+    caseStudy:{ title:'The risk enhancer the score cannot see',
+      text:'A South Asian patient with a strong family history of premature coronary disease returns a “low” polygenic score. The guideline already treats ancestry as a risk enhancer; the score, built elsewhere, argues the other way.',
+      src:'2018 AHA/ACC cholesterol guideline' },
+    action:'Use guideline-recognised ancestry risk enhancers and family history alongside any score, and never let a low score overrule a strong family history.'
+  },
+  afr: {
+    headline:'When the reference itself produces the wrong diagnosis.',
+    bullets:[
+      { tag:'Diagnosis', text:'Variants classified as pathogenic for hypertrophic cardiomyopathy from European reference data were later found to be benign in African American patients, contributing to misdiagnosis. The error came from the reference set, not the patient.', src:'Manrai et al., NEJM 2016' },
+      { tag:'Risk modelling', text:'Polygenic score accuracy is roughly 4.5–4.9× lower than in European-ancestry populations — the largest measured portability gap of any group.', src:'Martin et al., 2019' },
+      { tag:'Therapeutics', text:'Warfarin dosing algorithms were built on European cohorts and under-represent CYP2C9*5, *6 and *8 — variants that matter in African ancestry — so standard genotype-guided dosing can misestimate the dose. APOL1 G1/G2 variants raise a parallel question in nephrology.', src:'Warfarin pharmacogenomics literature; APOL1 literature — verify before citing' }
+    ],
+    caseStudy:{ title:'The variant that was not pathogenic here',
+      text:'A patient is told a gene variant causes hypertrophic cardiomyopathy, based on a classification built from a reference population in which that variant is rare. In African American patients the same variant is common and benign. The label, not the DNA, produced the diagnosis.',
+      src:'Manrai et al., NEJM 2016' },
+    action:'Treat a single pathogenic call in a gene with known ancestry-specific benign variants as provisional; seek ancestry-aware review before irreversible decisions.'
+  },
+  lat: {
+    headline:'The variant that European-only studies could not find.',
+    bullets:[
+      { tag:'Risk modelling', text:'The SLC16A11 variant is present in roughly 30% of Mexican-ancestry individuals and about 2% of Europeans, and is associated with type 2 diabetes. It was found by the SIGMA consortium, not by European-only GWAS.', src:'SIGMA Consortium, Nature 2014' },
+      { tag:'Diagnosis', text:'High admixture means more variants that no reference panel has seen, which shows up as a heavier burden of uncertain results rather than a clean answer.', src:'Popejoy &amp; Fullerton, Nature 2016' },
+      { tag:'Therapeutics', text:'Allele frequencies for several pharmacogenes differ from the European reference used to set standard doses, so “standard” is not a neutral word.', src:'CPIC guidance — verify specific allele before citing' }
+    ],
+    caseStudy:{ title:'The diabetes signal that was almost missed',
+      text:'A type 2 diabetes risk variant common in Mexican and Native American ancestry went undetected for years because the discovery cohorts were overwhelmingly European. The biology was there; the sample was not.',
+      src:'SIGMA Consortium, Nature 2014' },
+    action:'Take family history seriously even when a risk score is low, and prefer tools validated in admixed populations.'
+  },
+  ind: {
+    headline:'Two per cent of the data, and a score that pretends otherwise.',
+    bullets:[
+      { tag:'Risk modelling', text:'With about 2% of dataset share, a polygenic score for this group is effectively an extrapolation. Presenting its output as a risk estimate overstates what has been measured.', src:'Dataset figures, this dashboard' },
+      { tag:'Diagnosis', text:'Structural variants and population-specific alleles are under-detected when reads are aligned to a single linear reference genome. Pangenome references reduce, but do not remove, that bias.', src:'Human Pangenome Reference Consortium — verify before citing' },
+      { tag:'Therapeutics', text:'Allele frequencies relevant to dosing are rarely characterised at the resolution needed for this group, so standard-dose assumptions carry more uncertainty than usual.', src:'CPIC guidance — verify before citing' }
+    ],
+    caseStudy:{ title:'The statistically invisible patient',
+      text:'A patient from a population that is 2% of the reference data receives a risk score with no confidence interval and no caveat. The absence of evidence is presented as evidence of low risk.',
+      src:'Dataset figures, this dashboard' },
+    action:'Say plainly that the test was not validated in this population, and do not present a risk score as reassurance.'
   }
-  const g=GROUPS.find(x=>x.id===focus);
-  capA.innerHTML=`<strong style="color:var(--ink)">${g.record}%</strong> of the record. Each square ≈ 1%, rounded to whole squares.`;
-  capB.innerHTML=`<strong style="color:var(--ink)">${g.people}%</strong> of the world's people.`;
-  document.getElementById('heroNote').textContent=g.note;
-  document.querySelectorAll('#gridA .cell').forEach((c,i)=>{
-    if(recordCells[i]&&recordCells[i].id!==focus)c.classList.add('dim');
-  });
-  document.querySelectorAll('#gridB .cell').forEach((c,i)=>{
-    if(peopleCells[i]&&peopleCells[i].id!==focus)c.classList.add('dim');
+};
+
+/* ================================================================ state */
+const state = {
+  data: BASE.map(d => ({ ...d })),
+  selected: 'eur',
+  rebalance: 0,
+  appliedShares: null,
+  budget: 100000,
+  alloc: BASE.map(() => 100 / BASE.length),
+  lens: 'eur',
+  sort: { key: 'pop', dir: 'desc' },
+  query: '',
+  statusFilter: 'all',
+  tour: -1,
+  uploaded: false,
+  ai: { busy: false }
+};
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+const round = (v, d = 0) => { const f = 10 ** d; return Math.round(v * f) / f; };
+const fmt = (v, d = 1) => round(v, d).toFixed(d);
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ================================================================ derivations */
+function statusOf(ratio) {
+  if (ratio >= 1.5) return 'Highly over-indexed';
+  if (ratio >= 0.4) return 'Underrepresented';
+  if (ratio >= 0.2) return 'Severe blindspot';
+  return 'Completely ignored';
+}
+function statusClass(status) {
+  return status === 'Highly over-indexed' ? 'over'
+    : status === 'Underrepresented' ? 'under'
+    : status === 'Severe blindspot' ? 'severe' : 'ignored';
+}
+function effectiveShares() {
+  if (state.appliedShares) return state.appliedShares.slice();
+  const r = state.rebalance / 100;
+  return state.data.map(d => d.ds * (1 - r) + d.pop * r);
+}
+function rowsNow() {
+  const shares = effectiveShares();
+  return state.data.map((d, i) => {
+    const ds = shares[i];
+    const ratio = d.pop > 0 ? ds / d.pop : 0;
+    return {
+      ...d, ds, ratio, gap: ds - d.pop, status: statusOf(ratio),
+      confidence: clamp(Math.round(Math.min(1, ratio) * 100), 4, 100)
+    };
   });
 }
-legend.addEventListener('click',e=>{
-  const b=e.target.closest('button'); if(!b)return;
-  setFocus(b.dataset.id);
+function equityScore(rows) {
+  const dist = rows.reduce((s, r) => s + Math.abs(r.ds - r.pop), 0);
+  return round(100 * (1 - 0.5 * dist / 100), 1);
+}
+
+function hex2rgb(h) {
+  const n = parseInt(h.slice(1), 16);
+  return [n >> 16 & 255, n >> 8 & 255, n & 255];
+}
+function mix(a, b, t) {
+  const A = hex2rgb(a), B = hex2rgb(b);
+  return `rgb(${Math.round(A[0] + (B[0] - A[0]) * t)},${Math.round(A[1] + (B[1] - A[1]) * t)},${Math.round(A[2] + (B[2] - A[2]) * t)})`;
+}
+function ratioColor(r) {
+  if (r >= 1) return mix('#94A3B8', '#2563EB', clamp(Math.log2(r) / Math.log2(5), 0, 1));
+  const t = clamp(Math.log2(1 / Math.max(r, 0.01)) / Math.log2(6), 0, 1);
+  return t < 0.5 ? mix('#94A3B8', '#F59E0B', t * 2) : mix('#F59E0B', '#BE123C', (t - 0.5) * 2);
+}
+
+/* ================================================================ charts */
+const CHART_OK = typeof Chart !== 'undefined';
+const charts = {};
+const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+if (CHART_OK) {
+  Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
+  Chart.defaults.font.size = 11;
+  Chart.register({
+    id: 'refLine',
+    afterDatasetsDraw(chart) {
+      if (!chart.options.plugins || !chart.options.plugins.refLine) return;
+      const y = chart.scales.y;
+      if (!y) return;
+      const py = y.getPixelForValue(1);
+      const { ctx, chartArea } = chart;
+      ctx.save();
+      ctx.setLineDash([6, 4]);
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = cssVar('--chart-text');
+      ctx.beginPath();
+      ctx.moveTo(chartArea.left, py);
+      ctx.lineTo(chartArea.right, py);
+      ctx.stroke();
+      ctx.restore();
+    }
+  });
+  Chart.register({
+    id: 'valueLabels',
+    afterDatasetsDraw(chart) {
+      if (!chart.options.plugins || !chart.options.plugins.valueLabels) return;
+      const meta = chart.getDatasetMeta(0);
+      const { ctx } = chart;
+      ctx.save();
+      ctx.font = '600 10px Inter, system-ui, sans-serif';
+      ctx.fillStyle = cssVar('--chart-text');
+      ctx.textAlign = 'center';
+      meta.data.forEach((bar, i) => {
+        const v = chart.data.datasets[0].data[i];
+        ctx.fillText(Number(v).toFixed(2) + '×', bar.x, bar.y - 6);
+      });
+      ctx.restore();
+    }
+  });
+}
+
+function chartTooltip() {
+  return {
+    backgroundColor: cssVar('--text'),
+    titleColor: cssVar('--surface'),
+    bodyColor: cssVar('--surface'),
+    padding: 10, cornerRadius: 8, displayColors: false,
+    callbacks: { label: c => `${c.dataset.label}: ${Number(c.raw).toFixed(2)}%` }
+  };
+}
+
+function initCharts() {
+  if (!CHART_OK) return;
+  const grid = { color: cssVar('--chart-grid'), drawBorder: false };
+  const ticks = { color: cssVar('--chart-text'), maxRotation: 0, autoSkip: false };
+
+  charts.grouped = new Chart($('#chartGrouped'), {
+    type: 'bar',
+    data: { labels: [], datasets: [
+      { label: 'World population', data: [], backgroundColor: '#CBD5E1', borderRadius: 5, barPercentage: .8, categoryPercentage: .62 },
+      { label: 'Dataset', data: [], backgroundColor: [], borderRadius: 5, barPercentage: .8, categoryPercentage: .62 }
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: reduceMotion ? false : { duration: 600 },
+      onClick: (evt, els) => { if (els.length) selectGroup(rowsNow()[els[0].index].id); },
+      scales: { x: { grid: { display: false }, ticks }, y: { beginAtZero: true, suggestedMax: 80, grid, ticks: { color: cssVar('--chart-text'), callback: v => v + '%' } } },
+      plugins: { legend: { display: false }, tooltip: chartTooltip() }
+    }
+  });
+
+  charts.ratio = new Chart($('#chartRatio'), {
+    type: 'bar',
+    data: { labels: [], datasets: [{ label: 'Representation ratio', data: [], backgroundColor: [], borderRadius: 6, barPercentage: .68, categoryPercentage: .7 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: reduceMotion ? false : { duration: 600 },
+      onClick: (evt, els) => { if (els.length) selectGroup(rowsNow()[els[0].index].id); },
+      scales: { x: { grid: { display: false }, ticks }, y: { beginAtZero: true, suggestedMax: 5, grid, ticks: { color: cssVar('--chart-text'), callback: v => v + '×' } } },
+      plugins: { legend: { display: false }, tooltip: chartTooltip(), refLine: true, valueLabels: true }
+    }
+  });
+
+  charts.world = doughnut('chartWorld', 0);
+  charts.data = doughnut('chartData', 1);
+}
+
+function doughnut(id, mode) {
+  return new Chart($('#' + id), {
+    type: 'doughnut',
+    data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 2, borderColor: cssVar('--surface'), hoverOffset: 6 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '62%',
+      animation: reduceMotion ? false : { duration: 600 },
+      onClick: (evt, els) => { if (els.length) selectGroup(rowsNow()[els[0].index].id); },
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 8, boxHeight: 8, usePointStyle: true, pointStyle: 'circle', color: cssVar('--chart-text'), font: { size: 10 }, padding: 10 } },
+        tooltip: {
+          ...chartTooltip(),
+          callbacks: { label: c => `${c.label}: ${Number(c.raw).toFixed(1)} ${mode === 0 ? 'people' : 'genomes'}` }
+        }
+      }
+    }
+  });
+}
+
+function updateCharts(rows) {
+  if (!CHART_OK || !charts.grouped) return;
+  const labels = rows.map(r => r.name);
+  const text = cssVar('--chart-text');
+
+  charts.grouped.data.labels = labels;
+  charts.grouped.data.datasets[0].data = rows.map(r => r.pop);
+  charts.grouped.data.datasets[1].data = rows.map(r => round(r.ds, 1));
+  charts.grouped.data.datasets[1].backgroundColor = rows.map(r => ratioColor(r.ratio));
+  charts.grouped.options.scales.x.ticks.color = text;
+  charts.grouped.update();
+
+  charts.ratio.data.labels = labels;
+  charts.ratio.data.datasets[0].data = rows.map(r => round(r.ratio, 2));
+  charts.ratio.data.datasets[0].backgroundColor = rows.map(r => ratioColor(r.ratio));
+  charts.ratio.options.scales.x.ticks.color = text;
+  charts.ratio.update();
+
+  charts.world.data.labels = labels;
+  charts.world.data.datasets[0].data = rows.map(r => r.pop);
+  charts.world.data.datasets[0].backgroundColor = rows.map((r, i) => colorFor(r.id, i));
+  charts.world.update();
+
+  charts.data.data.labels = labels;
+  charts.data.data.datasets[0].data = rows.map(r => round(r.ds, 1));
+  charts.data.data.datasets[0].backgroundColor = rows.map((r, i) => colorFor(r.id, i));
+  charts.data.update();
+}
+
+/* ================================================================ render: kpis */
+function renderKpis(rows) {
+  const score = equityScore(rows);
+  const arc = $('#gaugeArc');
+  const C = 2 * Math.PI * 42;
+  arc.style.strokeDasharray = C;
+  arc.style.strokeDashoffset = C * (1 - score / 100);
+  $('#equityBig').innerHTML = `${score.toFixed(0)}<small>/100</small>`;
+  $('#equityNote').textContent = score >= 95 ? 'Near parity — by construction, not by new data'
+    : score >= 60 ? 'Improving, but still unequal' : 'Far from parity: the dataset is not a sample of humanity';
+
+  const under = rows.filter(r => r.ds < r.pop).length;
+  const big = $('.kpi .big [data-count="5"]');
+  if (big) big.textContent = under;
+  $('#underNote').textContent = under === 1 ? 'One group is under-represented' : `${under} groups are under-represented; ${rows.length - under} over-indexed`;
+
+  const max = Math.max(...rows.map(r => r.ratio));
+  const min = Math.min(...rows.map(r => r.ratio));
+  const spread = min > 0 ? max / min : 0;
+  $('#spreadBig').textContent = spread ? `${spread.toFixed(1)}×` : '—';
+  const top = rows.reduce((a, b) => a.ratio > b.ratio ? a : b);
+  const low = rows.reduce((a, b) => a.ratio < b.ratio ? a : b);
+  $('#spreadNote').textContent = `${top.name} ${top.ratio.toFixed(2)}× · ${low.name} ${low.ratio.toFixed(2)}×`;
+
+  const sel = rows.find(r => r.id === state.selected) || rows[0];
+  const ratioTxt = sel.ratio < 1 ? `${(1 / sel.ratio).toFixed(1)}× under-represented` : `${sel.ratio.toFixed(2)}× over-represented`;
+  $('#takeaway').innerHTML = `<b>In one sentence:</b> ${sel.name} people are ${sel.pop}% of the world and
+    ${sel.ds.toFixed(1)}% of this dataset — <b>${ratioTxt}</b> — so the tests, scores and drugs validated on
+    this data are least trustworthy for exactly the populations already least served.`;
+  $('#heatChip').textContent = `${rows.length} groups · ${rows.filter(r => r.ratio > 1).length} over-indexed`;
+  $('#chartChip').textContent = state.appliedShares ? 'Budget scenario applied'
+    : state.rebalance > 0 ? `Rebalanced ${state.rebalance}% toward parity` : 'Showing the dataset as reported';
+  $('#scenarioLabel').textContent = state.appliedShares ? 'Budget scenario applied'
+    : state.rebalance > 0 ? `Rebalanced ${state.rebalance}%` : 'As reported';
+  $('#rebalChip').textContent = `${state.rebalance}%`;
+  $('#rebalVal').textContent = `${state.rebalance}%`;
+  $('#rebalance').value = String(state.rebalance);
+  $('#rebalance').disabled = !!state.appliedShares;
+  $('#clinicalChip').textContent = sel.name;
+}
+
+/* ================================================================ render: treemap */
+function treemapLayout(items, x, y, w, h, out, horizontal) {
+  if (items.length === 1) { out.push({ ...items[0], x, y, w, h }); return; }
+  const total = items.reduce((s, i) => s + i.pop, 0) || 1;
+  let acc = 0, split = 1;
+  for (let i = 0; i < items.length - 1; i++) {
+    acc += items[i].pop;
+    split = i + 1;
+    if (acc >= total / 2) break;
+  }
+  const a = items.slice(0, split), b = items.slice(split);
+  const frac = a.reduce((s, i) => s + i.pop, 0) / total;
+  if (horizontal) {
+    treemapLayout(a, x, y, w * frac, h, out, false);
+    treemapLayout(b, x + w * frac, y, w * (1 - frac), h, out, false);
+  } else {
+    treemapLayout(a, x, y, w, h * frac, out, true);
+    treemapLayout(b, x, y + h * frac, w, h * (1 - frac), out, true);
+  }
+}
+function renderTreemap(rows) {
+  const box = $('#treemap');
+  const sorted = rows.slice().sort((a, b) => b.pop - a.pop);
+  const rects = [];
+  treemapLayout(sorted, 0, 0, 100, 100, rects, true);
+  box.innerHTML = rects.map(r => `
+    <button class="tile" type="button" data-id="${r.id}"
+      style="left:${r.x}%;top:${r.y}%;width:${r.w}%;height:${r.h}%"
+      aria-pressed="${r.id === state.selected}"
+      aria-label="${r.name}: ${r.pop}% of world population, ${fmt(r.ds, 1)}% of dataset, ratio ${r.ratio.toFixed(2)}">
+      <div class="tile-in" style="background:${ratioColor(r.ratio)}">
+        <div class="t-name">${r.name}</div>
+        <div>
+          <div class="t-ratio">${r.ratio.toFixed(2)}×</div>
+          <div class="t-sub">${r.ds.toFixed(1)}% of data · ${r.pop}% of people</div>
+        </div>
+      </div>
+    </button>`).join('');
+}
+
+/* ================================================================ render: table */
+const COLS = [
+  { key: 'name', label: 'Ancestry', num: false },
+  { key: 'pop', label: 'World pop.', num: true },
+  { key: 'ds', label: 'Dataset', num: true },
+  { key: 'ratio', label: 'Ratio', num: true },
+  { key: 'gap', label: 'Gap', num: true },
+  { key: 'status', label: 'Status', num: false }
+];
+function sortRows(rows) {
+  const { key, dir } = state.sort;
+  const mult = dir === 'asc' ? 1 : -1;
+  return rows.slice().sort((a, b) => {
+    const av = a[key], bv = b[key];
+    if (typeof av === 'string') return av.localeCompare(bv) * mult;
+    return (av - bv) * mult;
+  });
+}
+function filteredRows(rows) {
+  const q = state.query.trim().toLowerCase();
+  return rows.filter(r =>
+    (state.statusFilter === 'all' || r.status === state.statusFilter) &&
+    (!q || r.name.toLowerCase().includes(q))
+  );
+}
+function renderTable(rows) {
+  const head = $('#theadRow');
+  head.innerHTML = COLS.map(c => {
+    const active = state.sort.key === c.key;
+    const arrow = active ? (state.sort.dir === 'asc' ? '▲' : '▼') : '↕';
+    return `<th scope="col" data-key="${c.key}" tabindex="0" role="button"
+      aria-sort="${active ? (state.sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}">${c.label}<span class="ar">${arrow}</span></th>`;
+  }).join('');
+
+  const list = filteredRows(sortRows(rows));
+  $('#rowChip').textContent = `${list.length} of ${rows.length} rows`;
+
+  $('#tbody').innerHTML = list.map(r => `
+    <tr data-id="${r.id}" aria-selected="${r.id === state.selected}">
+      <td><strong>${r.name}</strong></td>
+      <td class="num">${r.pop}%</td>
+      <td class="num">${fmt(r.ds, 1)}%</td>
+      <td class="num">${r.ratio.toFixed(2)}×</td>
+      <td class="num" style="color:${r.gap < 0 ? 'var(--crimson)' : 'var(--over)'}">${r.gap > 0 ? '+' : ''}${fmt(r.gap, 1)} pp</td>
+      <td><span class="badge ${statusClass(r.status)}"><i class="d"></i>${r.status}</span></td>
+    </tr>`).join('') || `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">No groups match this filter.</td></tr>`;
+}
+
+/* ================================================================ render: clinical */
+function renderClinical(rows) {
+  const r = rows.find(x => x.id === state.selected) || rows[0];
+  const c = CLINICAL[r.id] || {
+    headline: 'A custom group — the ratio is the whole story.',
+    bullets: [
+      { tag:'Risk modelling', text:'At ' + r.ratio.toFixed(2) + '×, any model trained on this dataset is extrapolating for this group. Its output should be presented as an unmeasured estimate, not a risk.', src:'This dataset' },
+      { tag:'Diagnosis', text:`With ${fmt(r.ds, 1)}% of dataset share, variants common in this group are likely to be under-catalogued, which shifts results toward “uncertain” rather than “negative”.`, src:'This dataset' },
+      { tag:'Therapeutics', text:'Allele frequencies that guide dosing have not been characterised at the resolution this group needs. Standard-dose assumptions carry extra uncertainty.', src:'General principle' }
+    ],
+    caseStudy:{ title:'The unvalidated patient', text:'A risk score is generated for a group the training data barely contains. The number looks precise and carries no caveat — which is the hazard.', src:'This dataset' },
+    action:'State explicitly that the tool was not validated in this population, and treat its output as one input among clinical judgement and family history.'
+  };
+
+  $('#pickList').innerHTML = rows.map((x, i) => `
+    <button class="pick" type="button" data-id="${x.id}" aria-pressed="${x.id === r.id}">
+      <i class="dot" style="--c:${colorFor(x.id, i)}"></i>
+      <span class="nm">${x.name}</span>
+      <span class="rt">${x.ratio.toFixed(2)}×</span>
+    </button>`).join('');
+
+  $('#clinicalPanel').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span class="chip cool">${r.name}</span>
+      <span class="chip ${r.ratio < 1 ? 'hot' : 'ok'}">${r.ratio.toFixed(2)}× representation</span>
+      <span class="chip">${fmt(r.ds, 1)}% of data · ${r.pop}% of people</span>
+    </div>
+    <h3 style="font-size:19px;margin:12px 0 10px;letter-spacing:-.02em">${c.headline}</h3>
+    <div class="bullets">
+      ${c.bullets.map(b => `<div class="bullet">
+        <span class="tag ${b.tag.toLowerCase().replace(/\s+/g, '-')}">${b.tag}</span>
+        <p>${b.text}</p><div class="src">${b.src}</div>
+      </div>`).join('')}
+    </div>
+    <div class="case"><h4>Documented case study</h4><p><strong>${c.caseStudy.title}.</strong> ${c.caseStudy.text}</p>
+      <div class="src">${c.caseStudy.src}</div></div>
+    <div class="action"><span>→</span><div><b>What a clinician should do:</b> ${c.action}</div></div>
+    <details class="sources"><summary>Sources &amp; caveats</summary>
+      <p>Popejoy &amp; Fullerton, <em>Nature</em> 2016 · Martin et al., <em>Nature Genetics</em> 2019 ·
+        Manrai et al., <em>NEJM</em> 2016 · SIGMA Consortium, <em>Nature</em> 2014 · CPIC HLA-B*15:02 guideline 2018 ·
+        Moreno-Grau et al., 2024 · 2018 AHA/ACC cholesterol guideline. Figures are as reported in these
+        studies; details marked “verify before citing” should be checked against the primary source before
+        formal use.</p></details>`;
+}
+
+/* ================================================================ render: lens */
+function renderLens(rows) {
+  const sel = $('#lensSelect');
+  const sig = rows.map(r => r.id).join('|');
+  if (sel.dataset.sig !== sig) {
+    sel.innerHTML = rows.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+    sel.dataset.sig = sig;
+  }
+  sel.value = state.lens;
+  const r = rows.find(x => x.id === state.lens) || rows[0];
+  $('#lensPct').textContent = `${r.confidence}%`;
+  $('#lensMeter').querySelector('div').style.width = r.confidence + '%';
+
+  const band = r.confidence >= 80 ? 'ok' : r.confidence >= 45 ? 'mid' : 'low';
+  const msg = {
+    ok: { t: 'Well represented — with a caveat', b: `${r.name} patients are ${r.ratio.toFixed(2)}× over-represented in this dataset. That means the tools are likely to work — and that “normal” has been defined by this group. Rare variants and non-European family structures may still be missed.` },
+    mid: { t: 'Partially represented', b: `${r.name} patients are ${r.ratio.toFixed(2)}× against parity. Some evidence exists, but polygenic scores and variant classifications are less reliable than for over-represented groups. Revalidate before acting on a borderline result.` },
+    low: { t: 'Do not treat the model output as validated', b: `${r.name} patients are ${r.ratio.toFixed(2)}× against parity — the tools were largely built without them. A “low-risk” score is not evidence of low risk, and an uncertain variant is more likely to reflect missing reference data than a rare disease.` }
+  }[band];
+  $('#lensMsg').innerHTML = `<b>${msg.t}</b>${msg.b}`;
+}
+
+/* ================================================================ render: budget */
+function allocSum() { return state.alloc.reduce((a, b) => a + b, 0) || 1; }
+function budgetResult() {
+  const B = Math.max(1000, Number(state.budget) || 100000);
+  const base = state.data.map(d => d.ds / 100 * BASE_TOTAL);
+  const weights = state.alloc.map(w => w / allocSum());
+  const added = weights.map(w => B * w);
+  const total = BASE_TOTAL + B;
+  const shares = base.map((n, i) => (n + added[i]) / total * 100);
+  return { B, base, added, shares, total };
+}
+function renderBudget() {
+  $('#budgetLabel').textContent = Number(state.budget).toLocaleString('en-US');
+  $('#allocRows').innerHTML = state.data.map((d, i) => `
+    <div class="alloc-row">
+      <span><i class="sw" style="--c:${colorFor(d.id, i)}"></i>${d.name}</span>
+      <input type="range" min="0" max="100" step="1" value="${state.alloc[i]}" data-i="${i}"
+        aria-label="Share of new genomes for ${d.name}">
+      <output>${Math.round(state.alloc[i] / allocSum() * 100)}%</output>
+    </div>`).join('');
+
+  const res = budgetResult();
+  const rows = state.data.map((d, i) => ({ ...d, ds: res.shares[i], pop: d.pop, ratio: res.shares[i] / d.pop }));
+  const before = equityScore(rowsNow());
+  const after = equityScore(rows);
+  const under = rows.filter(r => r.ds < r.pop).length;
+
+  $('#bBefore').textContent = before.toFixed(1);
+  $('#bAfter').textContent = after.toFixed(1);
+  const delta = after - before;
+  $('#bDelta').innerHTML = `<span style="color:${delta > 0.05 ? 'var(--ok)' : delta < -0.05 ? 'var(--crimson)' : 'var(--muted)'}">
+    ${delta > 0 ? '+' : ''}${delta.toFixed(1)}</span>`;
+  $('#bUnder').textContent = `${under} of ${rows.length}`;
+  $('#budgetNotice').textContent = state.appliedShares
+    ? 'A budget scenario is currently applied to the dashboard. Clear it to return to the reported data.'
+    : 'Apply the allocation to see these shares in every chart and in the table.';
+}
+
+/* ================================================================ render */
+function render() {
+  const rows = rowsNow();
+  renderKpis(rows);
+  updateCharts(rows);
+  renderTreemap(rows);
+  renderTable(rows);
+  renderClinical(rows);
+  renderLens(rows);
+  renderBudget();
+}
+
+/* ================================================================ interactions */
+function selectGroup(id) {
+  state.selected = id;
+  state.lens = id;
+  const lens = $('#lensSelect');
+  if (lens) lens.value = id;
+  render();
+}
+
+document.addEventListener('click', e => {
+  const tile = e.target.closest('.tile');
+  if (tile) { selectGroup(tile.dataset.id); return; }
+  const pick = e.target.closest('.pick');
+  if (pick) { selectGroup(pick.dataset.id); return; }
+  const tr = e.target.closest('tbody tr[data-id]');
+  if (tr) { selectGroup(tr.dataset.id); return; }
+  const th = e.target.closest('th[data-key]');
+  if (th) {
+    const key = th.dataset.key;
+    if (state.sort.key === key) state.sort.dir = state.sort.dir === 'asc' ? 'desc' : 'asc';
+    else state.sort = { key, dir: key === 'name' || key === 'status' ? 'asc' : 'desc' };
+    render();
+  }
 });
 
-const rows=document.getElementById('rows');
-rows.innerHTML=GROUPS.map(g=>{
-  const ratio=g.record/g.people;
-  return `<div class="row">
-    <span class="lbl"><span class="dot" style="--c:${g.color}"></span>${g.name}</span>
-    <span class="track">
-      <span class="rec" style="width:${g.record}%;--c:${g.color}"></span>
-      <span class="pop" style="width:${g.people}%"></span>
-    </span>
-    <span class="mult">${ratio<1?ratio.toFixed(2):ratio.toFixed(1)}×<small>record ÷ people</small></span>
-  </div>`;
-}).join('');
-
-/* audit */
-const MIX=[
-  {id:'eur',name:'European',w:88.38,people:9.13,r:1.0,color:'#e0aa55'},
-  {id:'afr',name:'African',w:2.98,people:18.56,r:.394,color:'#79bd86'},
-  {id:'asi',name:'Asian',w:6.06,people:58.89,r:.49,color:'#56b3c4'},
-  {id:'lat',name:'Hispanic / LatAm',w:1.26,people:8.13,r:.625,color:'#dd9070'},
-  {id:'oth',name:'Other',w:1.33,people:5.28,r:.503,color:'#9a93b8'}
-];
-const sliders=document.getElementById('sliders');
-sliders.innerHTML=MIX.map(m=>`<div class="slider">
-  <span><span class="dot" style="--c:${m.color}"></span>${m.name}</span>
-  <input type="range" min="0" max="100" step="0.5" value="${m.w}" data-id="${m.id}" aria-label="${m.name} weight">
-  <output data-out="${m.id}">${m.w}%</output>
-</div>`).join('');
-
-function audit(){
-  const raw=MIX.map(m=>+sliders.querySelector(`input[data-id="${m.id}"]`).value);
-  const total=raw.reduce((a,b)=>a+b,0)||1;
-  const w=raw.map(v=>v/total*100);
-  let dist=0,port=0,simp=0;
-  MIX.forEach((m,i)=>{dist+=Math.abs(w[i]-m.people);port+=w[i]/100*m.r;simp+=(w[i]/100)**2;});
-  const rep=100-dist/2;
-  document.getElementById('sRep').textContent=rep.toFixed(1);
-  document.getElementById('sPor').textContent=(port*100).toFixed(1)+'%';
-  document.getElementById('sGrp').textContent=(1/(simp||1)).toFixed(2);
-  MIX.forEach((m,i)=>{sliders.querySelector(`[data-out="${m.id}"]`).textContent=w[i].toFixed(1)+'%';});
-}
-sliders.addEventListener('input',audit);
-const PRESETS=[
-  ['Global record',[88.38,2.98,6.06,1.26,1.33]],
-  ['UK Biobank-like',[94.6,1.6,1.6,0,2.2]],
-  ['All of Us-like',[66.4,19.5,5.7,6.3,2.1]],
-  ['World population',[9.13,18.56,58.89,8.13,5.28]]
-];
-document.getElementById('presets').innerHTML=PRESETS.map((p,i)=>`<button type="button" data-i="${i}">${p[0]}</button>`).join('');
-document.getElementById('presets').addEventListener('click',e=>{
-  const b=e.target.closest('button'); if(!b)return;
-  const p=PRESETS[+b.dataset.i];
-  MIX.forEach((m,i)=>{sliders.querySelector(`input[data-id="${m.id}"]`).value=p[1][i];});
-  audit();
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const th = e.target.closest('th[data-key]');
+  const tr = e.target.closest('tbody tr[data-id]');
+  if (th) { e.preventDefault(); th.click(); }
+  else if (tr) { e.preventDefault(); selectGroup(tr.dataset.id); }
 });
-audit();
 
-/* dragons */
-const GLYPH=`<svg viewBox="0 0 140 90" fill="none" aria-hidden="true">
-<g fill="currentColor"><path d="M52 38 C44 22 30 12 12 8 C24 22 30 30 32 40 Z" opacity=".5"/>
-<path d="M52 38 C62 22 76 12 94 6 C86 22 82 30 80 40 Z" opacity=".32"/></g>
-<path d="M46 44 C60 32 76 50 90 42 C100 36 106 30 112 26" stroke="currentColor" stroke-width="6.5" stroke-linecap="round"/>
-<path d="M46 44 C36 52 28 56 16 58 C10 59 6 63 3 69" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/>
-<path d="M64 47 L60 58 M78 46 L81 57" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
-<path d="M108 24 L126 18 L119 27 L128 31 L109 32 Z" fill="currentColor"/>
-<circle cx="115" cy="24" r="1.6" fill="#07090c"/></svg>`;
+$('#rebalance').addEventListener('input', e => {
+  state.rebalance = Number(e.target.value);
+  state.appliedShares = null;
+  render();
+});
+$('#resetScenario').addEventListener('click', () => {
+  state.rebalance = 0; state.appliedShares = null;
+  state.alloc = BASE.map(() => 100 / BASE.length);
+  render();
+});
 
-document.getElementById('dragons').innerHTML=[
-  'left:.4vw;top:16%;width:86px;color:var(--eur);opacity:.42;animation-delay:-2s',
-  'right:.6vw;top:38%;width:104px;color:var(--asi);opacity:.3;animation-delay:-11s',
-  'left:1vw;bottom:12%;width:62px;color:var(--oth);opacity:.26;animation-delay:-19s'
-].map(s=>`<div class="dragon" style="${s}">${GLYPH}</div>`).join('');
+$('#lensSelect').addEventListener('change', e => {
+  state.lens = e.target.value;
+  state.selected = e.target.value;
+  render();
+});
 
-const oracle=document.getElementById('oracle'), btn=document.getElementById('oracleBtn');
-let factIndex=0;
-function drawFact(){
-  oracle.innerHTML=`<div class="head">${GLYPH}<div><b>Dragon Oracle</b><small>A hoard of inconvenient facts</small></div>
-    <button type="button" aria-label="Close" id="closeOracle">×</button></div>
-    <p class="fact">${DRAGON[factIndex]}</p>
-    <div class="foot"><span class="tag">${['88.4%','0.29%','CFTR','39.4%','191','GRCh38','H3Africa','Dragon'][factIndex]}</span>
-    <button type="button" id="nextFact">Another fact</button></div>
-    <p class="fine">Local fact set · no model, no API key. Every figure comes from the sources above.</p>`;
-  document.getElementById('closeOracle').onclick=()=>oracle.classList.remove('open');
-  document.getElementById('nextFact').onclick=()=>{factIndex=(factIndex+1)%DRAGON.length;drawFact();};
+$('#search').addEventListener('input', e => { state.query = e.target.value; render(); });
+$('#statusFilter').addEventListener('change', e => { state.statusFilter = e.target.value; render(); });
+
+$('#exportBtn').addEventListener('click', () => {
+  const rows = filteredRows(sortRows(rowsNow()));
+  const head = 'group,world_population_share,dataset_share,representation_ratio,gap_pp,status\n';
+  const body = rows.map(r =>
+    `"${r.name.replace(/"/g, '""')}",${r.pop},${r.ds.toFixed(2)},${r.ratio.toFixed(3)},${r.gap.toFixed(2)},"${r.status}"`
+  ).join('\n');
+  const blob = new Blob([head + body], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'genomic-blindspots-audit.csv';
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 100);
+});
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  if (!lines.length) return [];
+  const rows = lines.map(l => l.split(',').map(s => s.trim().replace(/^"|"$/g, '')));
+  const start = isNaN(parseFloat(rows[0][1])) ? 1 : 0;
+  return rows.slice(start).map(r => ({ name: r[0], pop: parseFloat(r[1]), ds: parseFloat(r[2]) }))
+    .filter(d => d.name && isFinite(d.pop) && isFinite(d.ds) && d.pop >= 0 && d.ds >= 0);
 }
-btn.innerHTML=GLYPH+'<span>Ask the dragon</span>';
-btn.onclick=()=>{factIndex=Math.floor(Math.random()*DRAGON.length);drawFact();oracle.classList.add('open');};
-document.addEventListener('keydown',e=>{if(e.key==='Escape')oracle.classList.remove('open');});
+
+$('#csvInput').addEventListener('change', e => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = parseCSV(String(reader.result));
+      if (parsed.length < 2) throw new Error('Need at least two rows with group, population, dataset.');
+      const popSum = parsed.reduce((s, d) => s + d.pop, 0) || 1;
+      const dsSum = parsed.reduce((s, d) => s + d.ds, 0) || 1;
+      state.data = parsed.map((d, i) => ({
+        id: 'g' + i,
+        name: d.name,
+        pop: round(d.pop / popSum * 100, 2),
+        ds: round(d.ds / dsSum * 100, 2)
+      }));
+      state.selected = state.data[0].id;
+      state.lens = state.data[0].id;
+      state.rebalance = 0;
+      state.appliedShares = null;
+      state.alloc = state.data.map(() => 100 / state.data.length);
+      state.uploaded = true;
+      $('#tableNotice').innerHTML = `<div class="notice">Loaded <strong>${parsed.length}</strong> groups from
+        <strong>${file.name}</strong>. Population and dataset shares were normalised to 100%
+        (raw sums: ${popSum.toFixed(1)} / ${dsSum.toFixed(1)}).</div>`;
+      render();
+    } catch (err) {
+      $('#tableNotice').innerHTML = `<div class="notice err">Could not read that CSV — ${err.message}
+        Expected columns: group, population, dataset.</div>`;
+    }
+  };
+  reader.onerror = () => {
+    $('#tableNotice').innerHTML = `<div class="notice err">The file could not be read. Try a UTF-8 CSV.</div>`;
+  };
+  reader.readAsText(file);
+});
+
+const csvLabel = document.querySelector('label[for="csvInput"]');
+if (csvLabel) {
+  csvLabel.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#csvInput').click(); }
+  });
+}
+
+$('#resetData').addEventListener('click', () => {
+  state.data = BASE.map(d => ({ ...d }));
+  state.selected = 'eur'; state.lens = 'eur';
+  state.rebalance = 0; state.appliedShares = null;
+  state.alloc = BASE.map(() => 100 / BASE.length);
+  state.uploaded = false;
+  state.sort = { key: 'pop', dir: 'desc' };
+  state.query = ''; $('#search').value = '';
+  state.statusFilter = 'all'; $('#statusFilter').value = 'all';
+  $('#tableNotice').innerHTML = '';
+  $('#csvInput').value = '';
+  render();
+});
+
+$('#budget').addEventListener('input', e => { state.budget = Number(e.target.value) || 100000; renderBudget(); });
+$('#allocRows').addEventListener('input', e => {
+  const i = e.target.dataset.i;
+  if (i === undefined) return;
+  state.alloc[Number(i)] = Number(e.target.value);
+  renderBudget();
+});
+$('#bestBtn').addEventListener('click', () => {
+  const B = Math.max(1000, Number(state.budget) || 100000);
+  const base = state.data.map(d => d.ds / 100 * BASE_TOTAL);
+  const target = state.data.map(d => d.pop / 100 * (BASE_TOTAL + B));
+  const deficits = base.map((n, i) => Math.max(0, target[i] - n));
+  const sum = deficits.reduce((a, b) => a + b, 0);
+  state.alloc = sum > 0 ? deficits.map(d => d / sum * 100) : state.data.map(() => 100 / state.data.length);
+  renderBudget();
+});
+$('#equalBtn').addEventListener('click', () => {
+  state.alloc = state.data.map(() => 100 / state.data.length);
+  renderBudget();
+});
+$('#zeroBtn').addEventListener('click', () => {
+  state.alloc = state.data.map(d => (d.ds < d.pop ? 1 : 0));
+  if (state.alloc.reduce((a, b) => a + b, 0) === 0) state.alloc = state.data.map(() => 1);
+  renderBudget();
+});
+$('#applyBudget').addEventListener('click', () => {
+  const res = budgetResult();
+  state.appliedShares = res.shares;
+  state.rebalance = 0;
+  render();
+  document.getElementById('heatmap').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+});
+$('#clearBudget').addEventListener('click', () => {
+  state.appliedShares = null;
+  render();
+});
+
+/* ================================================================ AI assistant */
+const AI_PERSONA = {
+  clinician: 'You are briefing a practising clinician. Be specific about what changes at the point of care: which tests, which prescribing decisions, and what evidence is missing. Use short paragraphs and no hype.',
+  policymaker: 'You are briefing a health policymaker. Focus on procurement, approval requirements, funding and accountability. Be concrete and avoid clinical jargon.',
+  patient: 'You are explaining this to a patient with no medical training. Use plain language, short sentences, and say clearly when the evidence does not exist. Do not give personal medical advice.'
+};
+
+function aiStatus(msg, cls) {
+  const el = $('#aiStatus');
+  el.textContent = msg;
+  el.className = 'ai-status' + (cls ? ' ' + cls : '');
+}
+
+async function askGemini(mode) {
+  if (state.ai.busy) return;
+  const key = $('#apiKey').value.trim();
+  const model = ($('#modelName').value.trim() || 'gemini-2.5-flash');
+  const extra = $('#aiQuestion').value.trim();
+  if (!key) { aiStatus('Add your Gemini API key first. It is never stored.', 'err'); return; }
+
+  const rows = rowsNow();
+  const sel = rows.find(r => r.id === state.selected) || rows[0];
+  const score = equityScore(rows);
+  const context = `Ancestry group: ${sel.name}. World population share: ${sel.pop}%. Dataset share: ${sel.ds.toFixed(1)}%. Representation ratio: ${sel.ratio.toFixed(2)}×. Equity score for the whole dataset: ${score}/100. Groups: ${rows.map(r => `${r.name} ${r.pop}% population / ${r.ds.toFixed(1)}% data`).join('; ')}.`;
+
+  const prompt = `${AI_PERSONA[mode]}\n\nUse only the figures below. If a claim is not supported by them, say so rather than inventing a number.\n\n${context}\n\n${extra ? 'Question: ' + extra : ''}\n\nEnd with one sentence a ${mode} can act on.`;
+
+  state.ai.busy = true;
+  aiStatus('Asking Gemini…', '');
+  $('#aiOut').textContent = 'Thinking…';
+
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      const m = data && data.error && data.error.message ? data.error.message : `HTTP ${res.status}`;
+      throw new Error(m);
+    }
+    const text = data && data.candidates && data.candidates[0] &&
+      data.candidates[0].content && data.candidates[0].content.parts
+      ? data.candidates[0].content.parts.map(p => p.text || '').join('')
+      : '';
+    if (!text) throw new Error('The model returned an empty response.');
+    $('#aiOut').textContent = text + '\n\nAI-generated; verify before use. Not medical advice.';
+    aiStatus('Answer received. Nothing was stored.', 'ok');
+  } catch (err) {
+    $('#aiOut').textContent = 'No answer returned.';
+    aiStatus('Request failed: ' + err.message + ' — check the key, the model name and your network.', 'err');
+  } finally {
+    state.ai.busy = false;
+  }
+}
+
+$$('.ai-actions [data-mode]').forEach(b => b.addEventListener('click', () => askGemini(b.dataset.mode)));
+
+/* ================================================================ tour */
+const TOUR = [
+  { sel: '#hero', title: 'The problem in one glance', text: 'Three numbers: 75% of the data, 16% of the people, and an equity score of 41 out of 100. Everything after this is the consequence.' },
+  { sel: '#heatmap', title: 'See the blindspots', text: 'Tile area is population share; colour is representation. The cold red tiles are entire populations the dataset has effectively skipped.' },
+  { sel: '#charts', title: 'The data, precisely', text: 'Population share against dataset share, and the ratio against parity. Click any bar to select that group.' },
+  { sel: '#clinical', title: 'What it does to a patient', text: 'For the selected group: the diagnostic, therapeutic and modelling hazards, a documented case, and what a clinician should do differently.' },
+  { sel: '#policy', title: 'What changes it', text: 'Three procurement-level actions: validate across ancestries before approval, fund community-partnered sequencing, and mandate ancestry reporting.' }
+];
+function showTourStep(i) {
+  state.tour = i;
+  const step = TOUR[i];
+  $$('.tour-target').forEach(el => el.classList.remove('tour-target'));
+  const target = document.querySelector(step.sel);
+  if (target) {
+    target.classList.add('tour-target');
+    target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+  }
+  $('#tourStep').textContent = `Step ${i + 1} of ${TOUR.length}`;
+  $('#tourTitle').textContent = step.title;
+  $('#tourText').textContent = step.text;
+  $('#tourBack').disabled = i === 0;
+  $('#tourNext').textContent = i === TOUR.length - 1 ? 'Finish' : 'Next';
+  $('#tourbar').hidden = false;
+  document.body.classList.add('tour-on');
+}
+function endTour() {
+  state.tour = -1;
+  $$('.tour-target').forEach(el => el.classList.remove('tour-target'));
+  $('#tourbar').hidden = true;
+  document.body.classList.remove('tour-on');
+}
+$('#tourBtn').addEventListener('click', () => showTourStep(0));
+$('#tourNext').addEventListener('click', () => {
+  if (state.tour >= TOUR.length - 1) endTour();
+  else showTourStep(state.tour + 1);
+});
+$('#tourBack').addEventListener('click', () => { if (state.tour > 0) showTourStep(state.tour - 1); });
+$('#tourClose').addEventListener('click', endTour);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.tour >= 0) endTour(); });
+
+/* ================================================================ active nav */
+const navLinks = $$('.topnav a');
+const sections = navLinks.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+if ('IntersectionObserver' in window && sections.length) {
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + en.target.id));
+    });
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  sections.forEach(s => io.observe(s));
+}
+
+/* ================================================================ count-up */
+function countUp(el) {
+  const target = Number(el.dataset.count);
+  const suffix = el.dataset.suffix || '';
+  if (reduceMotion || !isFinite(target)) { el.textContent = target + suffix; return; }
+  const start = performance.now(), dur = 900;
+  const tick = now => {
+    const t = clamp((now - start) / dur, 0, 1);
+    const eased = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(target * eased) + suffix;
+    if (t < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+/* ================================================================ boot */
+function boot() {
+  $$('[data-count]').forEach(countUp);
+  if (!CHART_OK) {
+    $$('.chart-box,.donut').forEach(el => {
+      el.innerHTML = '<div style="display:flex;height:100%;align-items:center;justify-content:center;text-align:center;font-size:12px;color:var(--muted);padding:16px">Chart.js could not load from the CDN. Connect to the internet and reload — every other control still works.</div>';
+    });
+  }
+  initCharts();
+  render();
+  if (CHART_OK) {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const retheme = () => {
+      if (charts.grouped) {
+        Object.values(charts).forEach(c => {
+          c.options.plugins.tooltip.backgroundColor = cssVar('--text');
+          c.options.plugins.tooltip.titleColor = cssVar('--surface');
+          c.options.plugins.tooltip.bodyColor = cssVar('--surface');
+        });
+      }
+      render();
+    };
+    if (mq.addEventListener) mq.addEventListener('change', retheme);
+  }
+}
+boot();
+})();
 </script>
 </body>
 </html>
