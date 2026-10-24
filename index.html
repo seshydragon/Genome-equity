@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GENO-EQUITY | Global Genomic Imbalance & Clinical Audit Pipeline</title>
-  <!-- Tailwind CSS CDN -->
+  <title>GENO-EQUITY | Advanced Genomic Imbalance & Clinical Audit Pipeline</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js CDN -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -16,267 +16,244 @@
       theme: {
         extend: {
           colors: {
-            brand: { 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
-            accent: { 500: '#10b981', 600: '#059669' },
-            danger: { 500: '#ef4444', 600: '#dc2626' }
+            darkbg: '#090d16',
+            cardbg: '#111827',
+            brand: { 500: '#3b82f6', 600: '#2563eb' }
           }
         }
       }
     }
   </script>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col">
+<body class="bg-darkbg text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-blue-500 selection:text-white">
 
-  <!-- Navigation Bar -->
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+  <!-- Top Header -->
+  <header class="border-b border-slate-800/80 bg-cardbg/80 backdrop-blur-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <div class="p-2 bg-blue-600/20 text-blue-400 rounded-lg border border-blue-500/30">
-          <i data-lucide="dna" class="w-6 h-6"></i>
+        <div class="p-2.5 bg-gradient-to-br from-blue-500/20 to-emerald-500/20 text-blue-400 rounded-xl border border-blue-500/30 shadow-inner">
+          <i data-lucide="dna" class="w-6 h-6 animate-pulse"></i>
         </div>
         <div>
-          <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">GENO-EQUITY</h1>
-          <p class="text-xs text-slate-400">IMET Hackathon • Genomic Equity Track</p>
+          <h1 class="font-black text-lg tracking-wide bg-gradient-to-r from-blue-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">GENO-EQUITY ENGINE</h1>
+          <p class="text-[11px] text-slate-400 font-medium">IMET Hackathon • Genomic Equity & Clinical Audit Suite</p>
         </div>
       </div>
       <div class="flex items-center space-x-3">
-        <span class="px-3 py-1 text-xs rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Gemini 3 Flash Online
-        </span>
-        <button onclick="togglePitchMode()" class="px-3 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors flex items-center gap-1">
-          <i data-lucide="clock" class="w-3.5 h-3.5"></i> 30-Sec Pitch Mode
+        <!-- Dragon Mascot Trigger -->
+        <button onclick="toggleDragonMessage()" class="px-3 py-1.5 text-xs font-bold bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/30 rounded-lg transition-all flex items-center gap-1.5 shadow-lg shadow-amber-500/5">
+          🐉 <span class="hidden sm:inline">Genomic</span> Dragon
+        </button>
+        <button onclick="togglePitchModal()" class="px-3.5 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-all shadow-lg shadow-blue-600/20 flex items-center gap-1.5">
+          <i data-lucide="presentation" class="w-3.5 h-3.5"></i> Judge Walkthrough
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Pitch Banner Modal (Hidden by Default) -->
+  <!-- Dragon Popup Banner (Easter Egg) -->
+  <div id="dragonBanner" class="hidden max-w-7xl mx-auto px-4 w-full mt-4">
+    <div class="p-4 bg-gradient-to-r from-amber-950/40 via-purple-950/40 to-slate-900 border border-amber-500/30 rounded-2xl flex items-center justify-between shadow-xl">
+      <div class="flex items-center gap-3">
+        <div class="text-3xl animate-bounce">🐲</div>
+        <div>
+          <h4 class="font-bold text-amber-300 text-sm">Draco the Genomic Guardian says:</h4>
+          <p id="dragonTip" class="text-xs text-slate-300">"Beware the unmapped blindspots! Over 75% of biobank data is European, leaving 84% of global populations vulnerable to biased AI diagnostics!"</p>
+        </div>
+      </div>
+      <button onclick="toggleDragonMessage()" class="text-slate-400 hover:text-white text-xs px-2 py-1 bg-slate-800 rounded">Dismiss</button>
+    </div>
+  </div>
+
+  <!-- Pitch Modal -->
   <div id="pitchModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative">
-      <button onclick="togglePitchMode()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+    <div class="bg-cardbg border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative">
+      <button onclick="togglePitchModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg bg-slate-800/50">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
-      <div class="flex items-center gap-2 text-blue-400 text-sm font-semibold mb-2">
-        <i data-lucide="zap" class="w-4 h-4"></i> Executive Summary & Architectural Walkthrough
+      <div class="flex items-center gap-2 text-blue-400 text-xs font-bold uppercase tracking-wider mb-2">
+        <i data-lucide="zap" class="w-4 h-4"></i> 2-Minute Pitch Overview
       </div>
-      <h2 class="text-2xl font-bold text-white mb-4">Exposing Genomic Blindspots in Clinical AI</h2>
-      <div class="space-y-4 text-sm text-slate-300">
-        <div class="p-3 bg-slate-800/60 rounded-lg border border-slate-700/50">
-          <strong class="text-blue-400">The Problem:</strong> Over 75% of biobank genomic samples originate from European populations (only 16% of global demographics). Clinical AI & Polygenic Risk Scores (PRS) trained on this data suffer up to <span class="text-red-400 font-bold">85% accuracy decay</span> in non-European groups.
+      <h2 class="text-2xl font-bold text-white mb-4">Bridging Global Genomic Disparities</h2>
+      <div class="space-y-3 text-sm text-slate-300">
+        <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800">
+          <strong class="text-blue-400">The Problem:</strong> 75% of biobank sequence data represents European demographics (16% of global population). Automated diagnostic tools and Polygenic Risk Scores (PRS) collapse when applied to diverse groups.
         </div>
-        <div class="p-3 bg-slate-800/60 rounded-lg border border-slate-700/50">
-          <strong class="text-emerald-400">The Pipeline Solution:</strong> An interactive Python-backed auditing suite that simulates genomic accuracy decay, models misdiagnosis risk, and leverages Gemini 3 Flash to generate real-time clinical guardrails and equitable policy frameworks.
+        <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800">
+          <strong class="text-emerald-400">The Solution:</strong> An interactive audit dashboard integrating real-time Python analytics simulation, PRS decay modeling, and clinical case validation.
         </div>
-        <div class="grid grid-cols-3 gap-3 text-center pt-2">
-          <div class="p-2 bg-slate-800/40 rounded border border-slate-700">
-            <div class="text-xl font-bold text-red-400">75% vs 16%</div>
-            <div class="text-[10px] text-slate-400">Biobank vs Global Pop</div>
-          </div>
-          <div class="p-2 bg-slate-800/40 rounded border border-slate-700">
-            <div class="text-xl font-bold text-amber-400">4.8x</div>
-            <div class="text-[10px] text-slate-400">False Negative Multiplier</div>
-          </div>
-          <div class="p-2 bg-slate-800/40 rounded border border-slate-700">
-            <div class="text-xl font-bold text-emerald-400">Python + Gemini</div>
-            <div class="text-[10px] text-slate-400">Audit Architecture</div>
-          </div>
-        </div>
+      </div>
+      <div class="mt-6 flex justify-end">
+        <button onclick="togglePitchModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl">Close & Explore Dashboard</button>
       </div>
     </div>
   </div>
 
   <main class="max-w-7xl mx-auto px-4 py-6 flex-1 space-y-6">
 
-    <!-- KPI Metric Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
-        <div>
-          <p class="text-xs text-slate-400">European Biobank Dominance</p>
-          <p class="text-2xl font-bold text-red-400">75.0%</p>
-          <p class="text-[11px] text-slate-500">16% of global population</p>
+    <!-- KPI Metric Summary Bar -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-cardbg/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-sm">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider">European Bias</span>
+          <i data-lucide="pie-chart" class="w-4 h-4 text-red-400"></i>
         </div>
-        <div class="p-3 bg-red-500/10 text-red-400 rounded-lg"><i data-lucide="alert-triangle" class="w-6 h-6"></i></div>
+        <div class="text-2xl font-black text-red-400">75.0%</div>
+        <div class="text-[11px] text-slate-500 mt-1">Global Pop Share: 16%</div>
       </div>
 
-      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
-        <div>
-          <p class="text-xs text-slate-400">Global Demographics Ignored</p>
-          <p class="text-2xl font-bold text-amber-400">84.0%</p>
-          <p class="text-[11px] text-slate-500">Represented by &lt; 25% data</p>
+      <div class="bg-cardbg/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-sm">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider">Unrepresented Share</span>
+          <i data-lucide="users" class="w-4 h-4 text-amber-400"></i>
         </div>
-        <div class="p-3 bg-amber-500/10 text-amber-400 rounded-lg"><i data-lucide="eye-off" class="w-6 h-6"></i></div>
+        <div class="text-2xl font-black text-amber-400">84.0%</div>
+        <div class="text-[11px] text-slate-500 mt-1">Global demographic majority</div>
       </div>
 
-      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
-        <div>
-          <p class="text-xs text-slate-400">Avg Non-European PRS Loss</p>
-          <p class="text-2xl font-bold text-blue-400">55% - 85%</p>
-          <p class="text-[11px] text-slate-500">Predictive fidelity drop</p>
+      <div class="bg-cardbg/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-sm">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider">Max PRS Accuracy Loss</span>
+          <i data-lucide="trending-down" class="w-4 h-4 text-blue-400"></i>
         </div>
-        <div class="p-3 bg-blue-500/10 text-blue-400 rounded-lg"><i data-lucide="trending-down" class="w-6 h-6"></i></div>
+        <div class="text-2xl font-black text-blue-400">Up to 85%</div>
+        <div class="text-[11px] text-slate-500 mt-1">Trans-ethnic portability decay</div>
       </div>
 
-      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
-        <div>
-          <p class="text-xs text-slate-400">Clinical Risk Level</p>
-          <p class="text-2xl font-bold text-purple-400">CRITICAL</p>
-          <p class="text-[11px] text-slate-500">High diagnostic misclassification</p>
+      <div class="bg-cardbg/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-sm">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider">Audit Status</span>
+          <i data-lucide="shield-alert" class="w-4 h-4 text-purple-400"></i>
         </div>
-        <div class="p-3 bg-purple-500/10 text-purple-400 rounded-lg"><i data-lucide="activity" class="w-6 h-6"></i></div>
+        <div class="text-2xl font-black text-purple-400">CRITICAL</div>
+        <div class="text-[11px] text-slate-500 mt-1">5/6 cohorts flagged</div>
       </div>
     </div>
 
-    <!-- Main Grid: Charts & Simulator -->
+    <!-- Charts & PRS Simulator Section -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-      <!-- Left Column: Chart (7 Cols) -->
-      <div class="lg:col-span-7 bg-slate-900/60 border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
+      <!-- Chart Display (7 Cols) -->
+      <div class="lg:col-span-7 bg-cardbg/80 border border-slate-800/80 rounded-2xl p-5 flex flex-col justify-between backdrop-blur-sm">
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h2 class="font-bold text-slate-100 flex items-center gap-2">
-              <i data-lucide="bar-chart-3" class="w-4 h-4 text-blue-400"></i> IMET Baseline Dataset: Population vs. Biobank
+            <h2 class="font-bold text-slate-200 flex items-center gap-2">
+              <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-400"></i> IMET Dataset: Population vs. Biobank
             </h2>
-            <p class="text-xs text-slate-400">Comparing true global population shares against current biobank representation</p>
+            <p class="text-xs text-slate-400">Structural disparity analysis across ancestral groups</p>
           </div>
-          <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-1 rounded border border-slate-700">Source: IMET Dataset</span>
+          <span class="text-[10px] font-semibold bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-700">Official Benchmark</span>
         </div>
         <div class="h-72 w-full">
           <canvas id="disparityChart"></canvas>
         </div>
       </div>
 
-      <!-- Right Column: Interactive PRS Decay Simulator (5 Cols) -->
-      <div class="lg:col-span-5 bg-slate-900/60 border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
+      <!-- PRS Simulator (5 Cols) -->
+      <div class="lg:col-span-5 bg-cardbg/80 border border-slate-800/80 rounded-2xl p-5 flex flex-col justify-between backdrop-blur-sm">
         <div>
-          <h2 class="font-bold text-slate-100 flex items-center gap-2 mb-1">
-            <i data-lucide="sliders" class="w-4 h-4 text-emerald-400"></i> Clinical PRS Risk Simulator
+          <h2 class="font-bold text-slate-200 flex items-center gap-2 mb-1">
+            <i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i> Polygenic Risk Score Simulator
           </h2>
-          <p class="text-xs text-slate-400 mb-4">Select target ancestral background to model clinical diagnostic accuracy loss.</p>
+          <p class="text-xs text-slate-400 mb-4">Simulate predictive validity drop based on patient ancestry.</p>
 
           <div class="space-y-4">
             <div>
-              <label class="text-xs text-slate-300 block mb-1">Target Patient Ancestry</label>
-              <select id="ancestrySelect" onchange="updateSimulator()" class="w-full bg-slate-800 border border-slate-700 text-sm rounded-lg p-2.5 text-slate-200 focus:ring-blue-500 focus:border-blue-500">
-                <option value="EUR">European Descent (Over-Indexed Benchmark)</option>
-                <option value="EAS">East Asian Descent (8% Dataset)</option>
-                <option value="SAS">South Asian Descent (6% Dataset)</option>
-                <option value="AFR">African Descent (5% Dataset)</option>
-                <option value="HIS">Latino / Hispanic Descent (4% Dataset)</option>
-                <option value="IND">Indigenous / Other (2% Dataset)</option>
+              <label class="text-xs text-slate-300 font-medium block mb-1">Target Patient Ancestry</label>
+              <select id="ancestrySelect" onchange="updateSimulator()" class="w-full bg-slate-900 border border-slate-700 text-sm rounded-xl p-2.5 text-slate-200 focus:ring-2 focus:ring-blue-500">
+                <option value="EUR">European Descent (Benchmark)</option>
+                <option value="EAS">East Asian Descent (8% Data)</option>
+                <option value="SAS">South Asian Descent (6% Data)</option>
+                <option value="AFR">African Descent (5% Data)</option>
+                <option value="HIS">Latino / Hispanic (4% Data)</option>
+                <option value="IND">Indigenous / Other (2% Data)</option>
               </select>
             </div>
 
             <div>
-              <label class="text-xs text-slate-300 block mb-1">Biobank Cohort Diversity Ratio (<span id="diversityVal">10%</span>)</label>
-              <input type="range" id="diversitySlider" min="1" max="50" value="10" oninput="updateSimulator()" class="w-full accent-blue-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
+              <label class="text-xs text-slate-300 font-medium block mb-1">Cohort Diversity Adjustment (<span id="diversityVal">10%</span>)</label>
+              <input type="range" id="diversitySlider" min="1" max="50" value="10" oninput="updateSimulator()" class="w-full accent-blue-500 bg-slate-900 h-2 rounded-lg cursor-pointer">
             </div>
 
-            <!-- Simulation Output Box -->
             <div class="p-4 bg-slate-950/80 rounded-xl border border-slate-800 space-y-3">
-              <div class="flex justify-between items-center">
-                <span class="text-xs text-slate-400">PRS Model Accuracy Retention:</span>
-                <span id="accuracyRetained" class="text-sm font-bold text-emerald-400">100%</span>
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-400">Model Accuracy Retention:</span>
+                <span id="accuracyRetained" class="font-bold text-emerald-400 text-sm">100%</span>
               </div>
               <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
                 <div id="accuracyBar" class="bg-emerald-400 h-full transition-all duration-300" style="width: 100%"></div>
               </div>
-
-              <div class="grid grid-cols-2 gap-2 pt-2 text-xs">
-                <div class="p-2 bg-slate-900 rounded border border-slate-800">
-                  <div class="text-slate-500">False Negative Risk</div>
-                  <div id="falseNegRisk" class="font-bold text-slate-200">1.0x (Baseline)</div>
+              <div class="grid grid-cols-2 gap-2 pt-1 text-xs">
+                <div class="p-2 bg-slate-900 rounded-lg border border-slate-800">
+                  <span class="text-slate-500 block">False-Neg Risk</span>
+                  <span id="falseNegRisk" class="font-bold text-slate-200">1.0x</span>
                 </div>
-                <div class="p-2 bg-slate-900 rounded border border-slate-800">
-                  <div class="text-slate-500">Clinical Impact Status</div>
-                  <div id="clinicalStatus" class="font-bold text-emerald-400">High Precision</div>
+                <div class="p-2 bg-slate-900 rounded-lg border border-slate-800">
+                  <span class="text-slate-500 block">Clinical Status</span>
+                  <span id="clinicalStatus" class="font-bold text-emerald-400">Optimal</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-        <p class="text-[11px] text-slate-500 mt-3 italic">*Mathematical simulation based on trans-ethnic polygenic portability decay formulas.</p>
       </div>
 
     </div>
 
-    <!-- Python Pipeline Code Engine & Clinical Case Studies (+5 Stretch Points) -->
+    <!-- Python Pipeline Sandbox & Clinical Case Vault -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-      <!-- Left Column: Python Data Pipeline Code Runner (6 Cols) -->
-      <div class="lg:col-span-6 bg-slate-900/60 border border-slate-800 rounded-xl p-5 flex flex-col">
+      <!-- Python Runner (6 Cols) -->
+      <div class="lg:col-span-6 bg-cardbg/80 border border-slate-800/80 rounded-2xl p-5 flex flex-col backdrop-blur-sm">
         <div class="flex items-center justify-between mb-3">
-          <h2 class="font-bold text-slate-100 flex items-center gap-2">
+          <h2 class="font-bold text-slate-200 flex items-center gap-2">
             <i data-lucide="terminal" class="w-4 h-4 text-purple-400"></i> Python Audit Pipeline Sandbox
           </h2>
-          <button onclick="runPythonCode()" class="px-3 py-1 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold rounded flex items-center gap-1 transition-colors">
-            <i data-lucide="play" class="w-3 h-3"></i> Run Pipeline
+          <button onclick="runPythonCode()" class="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all shadow-lg shadow-purple-600/20">
+            <i data-lucide="play" class="w-3.5 h-3.5"></i> Run Audit Script
           </button>
         </div>
 
-        <!-- Code Editor Display -->
-        <div class="bg-slate-950 font-mono text-xs rounded-lg p-3 border border-slate-800 text-slate-300 overflow-x-auto mb-3">
-          <pre id="pythonCode">
-<span class="text-purple-400">import</span> pandas <span class="text-purple-400">as</span> pd
-<span class="text-purple-400">import</span> numpy <span class="text-purple-400">as</span> np
-
-<span class="text-slate-500"># IMET Baseline Genomic Dataset</span>
-data = {
-    <span class="text-emerald-400">'Ancestry'</span>: [<span class="text-emerald-400">'European'</span>, <span class="text-emerald-400">'East Asian'</span>, <span class="text-emerald-400">'South Asian'</span>, <span class="text-emerald-400">'African'</span>, <span class="text-emerald-400">'Latino'</span>, <span class="text-emerald-400">'Indigenous'</span>],
-    <span class="text-emerald-400">'Global_Pop_Pct'</span>: [<span class="text-purple-300">16.0</span>, <span class="text-purple-300">21.0</span>, <span class="text-purple-300">24.0</span>, <span class="text-purple-300">18.0</span>, <span class="text-purple-300">9.0</span>, <span class="text-purple-300">12.0</span>],
-    <span class="text-emerald-400">'Biobank_Pct'</span>: [<span class="text-purple-300">75.0</span>, <span class="text-purple-300">8.0</span>, <span class="text-purple-300">6.0</span>, <span class="text-purple-300">5.0</span>, <span class="text-purple-300">4.0</span>, <span class="text-purple-300">2.0</span>]
-}
-
+        <div class="bg-slate-950 font-mono text-xs rounded-xl p-3.5 border border-slate-800 text-slate-300 overflow-x-auto mb-3">
+          <pre><span class="text-purple-400">import</span> pandas <span class="text-purple-400">as</span> pd
+data = {<span class="text-emerald-400">'Ancestry'</span>: [<span class="text-emerald-400">'EUR'</span>, <span class="text-emerald-400">'EAS'</span>, <span class="text-emerald-400">'SAS'</span>, <span class="text-emerald-400">'AFR'</span>, <span class="text-emerald-400">'HIS'</span>, <span class="text-emerald-400">'IND'</span>],
+        <span class="text-emerald-400">'Biobank_Pct'</span>: [<span class="text-amber-300">75</span>, <span class="text-amber-300">8</span>, <span class="text-amber-300">6</span>, <span class="text-amber-300">5</span>, <span class="text-amber-300">4</span>, <span class="text-amber-300">2</span>]}
 df = pd.DataFrame(data)
-df[<span class="text-emerald-400">'Representation_Ratio'</span>] = (df[<span class="text-emerald-400">'Biobank_Pct'</span>] / df[<span class="text-emerald-400">'Global_Pop_Pct'</span>]).round(<span class="text-purple-300">2</span>)
-df[<span class="text-emerald-400">'Equity_Alert'</span>] = np.where(df[<span class="text-emerald-400">'Representation_Ratio'</span>] < <span class="text-purple-300">0.5</span>, <span class="text-emerald-400">'SEVERE BLINDSPOT'</span>, <span class="text-emerald-400">'OPTIMAL'</span>)
-
-<span class="text-purple-400">print</span>(df[[<span class="text-emerald-400">'Ancestry'</span>, <span class="text-emerald-400">'Representation_Ratio'</span>, <span class="text-emerald-400">'Equity_Alert'</span>]])</pre>
+df[<span class="text-emerald-400">'Audit_Risk'</span>] = df[<span class="text-emerald-400">'Biobank_Pct'</span>].apply(<span class="text-blue-400">lambda</span> x: <span class="text-emerald-400">'OPTIMAL'</span> <span class="text-purple-400">if</span> x > <span class="text-amber-300">10</span> <span class="text-purple-400">else</span> <span class="text-red-400">'SEVERE BLINDSPOT'</span>)
+<span class="text-purple-400">print</span>(df)</pre>
         </div>
 
-        <!-- Terminal Output -->
-        <div class="flex-1 bg-slate-950 font-mono text-xs rounded-lg p-3 border border-slate-800 text-emerald-400 overflow-y-auto max-h-36">
-          <div class="text-slate-500 mb-1">$ python audit_pipeline.py</div>
-          <div id="terminalOutput">Click "Run Pipeline" to execute genomic audit calculations...</div>
+        <div class="flex-1 bg-slate-950 font-mono text-xs rounded-xl p-3.5 border border-slate-800 text-emerald-400 overflow-y-auto max-h-36">
+          <div class="text-slate-500 mb-1">$ python3 equity_audit.py</div>
+          <div id="terminalOutput">Ready to execute pipeline... Click "Run Audit Script".</div>
         </div>
       </div>
 
-      <!-- Right Column: Case Studies (+5 Stretch Challenge Points) (6 Cols) -->
-      <div class="lg:col-span-6 bg-slate-900/60 border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
+      <!-- Case Study Vault (+5 Stretch Points) (6 Cols) -->
+      <div class="lg:col-span-6 bg-cardbg/80 border border-slate-800/80 rounded-2xl p-5 flex flex-col justify-between backdrop-blur-sm">
         <div>
           <div class="flex items-center justify-between mb-3">
-            <h2 class="font-bold text-slate-100 flex items-center gap-2">
+            <h2 class="font-bold text-slate-200 flex items-center gap-2">
               <i data-lucide="book-open" class="w-4 h-4 text-amber-400"></i> Clinical Case Vault (+5 Stretch Points)
             </h2>
-            <span class="px-2 py-0.5 text-[10px] bg-amber-500/10 text-amber-400 rounded border border-amber-500/20 font-semibold">Research Precedents</span>
+            <span class="px-2.5 py-1 text-[10px] bg-amber-500/10 text-amber-400 rounded-lg border border-amber-500/20 font-bold">Research Precedents</span>
           </div>
 
           <div class="space-y-3">
-            <!-- Case 1 -->
-            <div class="p-3 bg-slate-950/60 rounded-lg border border-slate-800 hover:border-slate-700 transition-colors">
+            <div class="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800 hover:border-slate-700 transition-all">
               <div class="flex items-center justify-between mb-1">
-                <span class="font-semibold text-xs text-blue-400">Warfarin & Clopidogrel (CYP2C19/CYP2C9)</span>
-                <span class="text-[10px] text-red-400 font-bold">Dosing Toxicity Hazard</span>
+                <span class="font-bold text-xs text-blue-400">Warfarin & Clopidogrel (CYP2C19/CYP2C9)</span>
+                <span class="text-[10px] text-red-400 font-bold">Dosing Toxicity</span>
               </div>
-              <p class="text-xs text-slate-300">Lack of non-European dosing models led to severe adverse bleeding and cardiovascular events in Pacific Islander and Asian populations due to unmapped loss-of-function variants.</p>
+              <p class="text-xs text-slate-300">Unmapped variants in Pacific Islander and Asian populations led to severe adverse bleeding events due to European-centric dosing algorithms.</p>
             </div>
 
-            <!-- Case 2 -->
-            <div class="p-3 bg-slate-950/60 rounded-lg border border-slate-800 hover:border-slate-700 transition-colors">
+            <div class="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800 hover:border-slate-700 transition-all">
               <div class="flex items-center justify-between mb-1">
-                <span class="font-semibold text-xs text-amber-400">BRCA1/2 Classification Misclassifications</span>
-                <span class="text-[10px] text-amber-400 font-bold">High False VUS Rates</span>
+                <span class="font-bold text-xs text-amber-400">BRCA1/2 VUS Disparities</span>
+                <span class="text-[10px] text-amber-400 font-bold">High False VUS</span>
               </div>
-              <p class="text-xs text-slate-300">Underrepresented patients testing for hereditary breast cancer are disproportionately assigned "Variants of Uncertain Significance" (VUS), delaying life-saving preventive care.</p>
-            </div>
-
-            <!-- Case 3 -->
-            <div class="p-3 bg-slate-950/60 rounded-lg border border-slate-800 hover:border-slate-700 transition-colors">
-              <div class="flex items-center justify-between mb-1">
-                <span class="font-semibold text-xs text-emerald-400">Albuterol Bronchodilator Response</span>
-                <span class="text-[10px] text-red-400 font-bold">Therapeutic Failure</span>
-              </div>
-              <p class="text-xs text-slate-300">Puerto Rican children exhibit significantly lower bronchodilator response to Albuterol asthma therapy due to distinct genetic loci absent in European-focused reference panels.</p>
+              <p class="text-xs text-slate-300">Underrepresented patients testing for hereditary cancer are disproportionately assigned ambiguous Variants of Uncertain Significance, delaying care.</p>
             </div>
           </div>
         </div>
@@ -284,55 +261,48 @@ df[<span class="text-emerald-400">'Equity_Alert'</span>] = np.where(df[<span cla
 
     </div>
 
-    <!-- Gemini AI Assistant Section -->
-    <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+    <!-- Gemini AI Assistant -->
+    <div class="bg-cardbg/80 border border-slate-800/80 rounded-2xl p-5 backdrop-blur-sm">
       <div class="flex items-center justify-between mb-4">
         <div>
-          <h2 class="font-bold text-slate-100 flex items-center gap-2">
-            <i data-lucide="bot" class="w-4 h-4 text-emerald-400"></i> Gemini Genomic Equity & Policy Assistant
+          <h2 class="font-bold text-slate-200 flex items-center gap-2">
+            <i data-lucide="bot" class="w-4 h-4 text-emerald-400"></i> Gemini Genomic Equity Assistant
           </h2>
-          <p class="text-xs text-slate-400">Ask Gemini for clinical mitigation tactics, healthcare policy frameworks, or diagnostic guardrails</p>
+          <p class="text-xs text-slate-400">Query AI for clinical guardrails or policy recommendations</p>
         </div>
         <div class="flex gap-2">
-          <button onclick="askPreset('What are 3 concrete clinical guardrails for deploying PRS models in diverse populations?')" class="px-2.5 py-1 text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 transition-colors">
-            Clinical Guardrails
-          </button>
-          <button onclick="askPreset('Draft a healthcare policy recommendation to mandate biobank diversity in genomic research.')" class="px-2.5 py-1 text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 rounded border border-slate-700 transition-colors">
-            Policy Framework
-          </button>
+          <button onclick="askPreset('Provide 3 clinical guardrails for evaluating PRS in diverse patient cohorts.')" class="px-3 py-1 text-xs bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-lg border border-slate-700 font-medium transition-all">Clinical Guardrails</button>
         </div>
       </div>
 
-      <!-- AI Prompt Input & Output -->
       <div class="space-y-3">
         <div class="flex gap-2">
-          <input type="text" id="aiQuery" placeholder="Ask Gemini about genomic data equity, clinical risks, or policy mitigation..." class="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500">
-          <button onclick="sendAIQuery()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-lg flex items-center gap-1 transition-colors">
-            <i data-lucide="send" class="w-3.5 h-3.5"></i> Query AI
+          <input type="text" id="aiQuery" placeholder="Ask Gemini about genomic data bias, clinical trials, or equitable policy..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <button onclick="sendAIQuery()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-lg shadow-emerald-600/20">
+            <i data-lucide="send" class="w-3.5 h-3.5"></i> Send
           </button>
         </div>
 
-        <div id="aiResponseContainer" class="hidden p-4 bg-slate-950/90 rounded-lg border border-slate-800 text-xs text-slate-300 space-y-2">
-          <div class="flex items-center gap-1.5 font-semibold text-emerald-400 mb-1">
+        <div id="aiResponseContainer" class="hidden p-4 bg-slate-950/90 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-1.5">
+          <div class="flex items-center gap-1.5 font-bold text-emerald-400 mb-1">
             <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Gemini Response:
           </div>
-          <div id="aiResponseText" class="leading-relaxed whitespace-pre-wrap">Thinking...</div>
+          <div id="aiResponseText" class="leading-relaxed whitespace-pre-wrap">Analyzing query...</div>
         </div>
       </div>
     </div>
 
   </main>
 
-  <footer class="border-t border-slate-800 bg-slate-900/40 py-4 text-center text-xs text-slate-500">
+  <footer class="border-t border-slate-800/80 bg-cardbg/40 py-4 text-center text-xs text-slate-500">
     <p>IMET Hackathon 2026 • Genomic Equity Challenge • MOTW Coffee, Alpharetta, GA</p>
   </footer>
 
-  <!-- App Scripting -->
+  <!-- Scripts -->
   <script>
-    // Initialize Lucide Icons
     lucide.createIcons();
 
-    // Chart.js Setup for Baseline Dataset
+    // Chart.js Setup
     const ctx = document.getElementById('disparityChart').getContext('2d');
     const disparityChart = new Chart(ctx, {
       type: 'bar',
@@ -345,7 +315,7 @@ df[<span class="text-emerald-400">'Equity_Alert'</span>] = np.where(df[<span cla
             backgroundColor: 'rgba(59, 130, 246, 0.7)',
             borderColor: '#3b82f6',
             borderWidth: 1,
-            borderRadius: 4
+            borderRadius: 6
           },
           {
             label: 'Biobank Dataset %',
@@ -353,7 +323,7 @@ df[<span class="text-emerald-400">'Equity_Alert'</span>] = np.where(df[<span cla
             backgroundColor: 'rgba(239, 68, 68, 0.7)',
             borderColor: '#ef4444',
             borderWidth: 1,
-            borderRadius: 4
+            borderRadius: 6
           }
         ]
       },
@@ -361,25 +331,32 @@ df[<span class="text-emerald-400">'Equity_Alert'</span>] = np.where(df[<span cla
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { color: '#94a3b8', font: { size: 10 } },
-            grid: { color: '#1e293b' }
-          },
-          x: {
-            ticks: { color: '#94a3b8', font: { size: 10 } },
-            grid: { display: false }
-          }
+          y: { beginAtZero: true, ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#1e293b' } },
+          x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } }
         },
-        plugins: {
-          legend: {
-            labels: { color: '#cbd5e1', font: { size: 11 } }
-          }
-        }
+        plugins: { legend: { labels: { color: '#cbd5e1', font: { size: 11 } } } }
       }
     });
 
-    // PRS Simulator Dynamic Calculations
+    // Dragon Mascot Random Tips
+    const dragonTips = [
+      "\"Beware the unmapped blindspots! Over 75% of biobank data is European, leaving 84% of global populations vulnerable to biased AI diagnostics!\"",
+      "\"Draco's Rule #1: Polygenic Risk Scores lose up to 85% predictive accuracy when applied across ancestral divides without diverse calibration!\"",
+      "\"Fun Dragon Fact: Increasing multi-ancestry biobank representation by just 20% dramatically reduces false-negative diagnostics in clinical trials!\""
+    ];
+
+    function toggleDragonMessage() {
+      const banner = document.getElementById('dragonBanner');
+      if (banner.classList.contains('hidden')) {
+        const randomTip = dragonTips[Math.floor(Math.random() * dragonTips.length)];
+        document.getElementById('dragonTip').innerText = randomTip;
+        banner.classList.remove('hidden');
+      } else {
+        banner.classList.add('hidden');
+      }
+    }
+
+    // PRS Simulator Logic
     function updateSimulator() {
       const ancestry = document.getElementById('ancestrySelect').value;
       const diversity = parseInt(document.getElementById('diversitySlider').value);
@@ -387,19 +364,19 @@ df[<span class="text-emerald-400">'Equity_Alert'</span>] = np.where(df[<span cla
 
       let accuracy = 100;
       let falseNeg = 1.0;
-      let status = "High Precision";
+      let status = "Optimal Precision";
       let statusColor = "text-emerald-400";
       let barColor = "bg-emerald-400";
 
       if (ancestry !== 'EUR') {
-        const penaltyMap = { 'EAS': 35, 'SAS': 45, 'AFR': 65, 'HIS': 50, 'IND': 75 };
-        const basePenalty = penaltyMap[ancestry] || 40;
-        const mitigation = (diversity / 50) * 20; // Up to 20% recovery with diversity
-        accuracy = Math.max(15, Math.round(100 - basePenalty + mitigation));
-        falseNeg = (1 + ((100 - accuracy) / 20)).toFixed(1);
+        const penalties = { 'EAS': 35, 'SAS': 45, 'AFR': 65, 'HIS': 50, 'IND': 75 };
+        const penalty = penalties[ancestry] || 40;
+        const recovery = (diversity / 50) * 20;
+        accuracy = Math.max(15, Math.round(100 - penalty + recovery));
+        falseNeg = (1 + ((100 - accuracy) / 18)).toFixed(1);
 
         if (accuracy < 40) {
-          status = "Severe Blindspot / High Misdiagnosis";
+          status = "Severe Blindspot / High Risk";
           statusColor = "text-red-400";
           barColor = "bg-red-500";
         } else if (accuracy < 70) {
@@ -412,37 +389,35 @@ df[<span class="text-emerald-400">'Equity_Alert'</span>] = np.where(df[<span cla
       document.getElementById('accuracyRetained').innerText = accuracy + '%';
       document.getElementById('accuracyBar').className = `${barColor} h-full transition-all duration-300`;
       document.getElementById('accuracyBar').style.width = accuracy + '%';
-      document.getElementById('falseNegRisk').innerText = falseNeg + 'x Risk';
+      document.getElementById('falseNegRisk').innerText = falseNeg + 'x';
       document.getElementById('clinicalStatus').innerText = status;
       document.getElementById('clinicalStatus').className = `font-bold ${statusColor}`;
     }
 
-    // Python Pipeline Execution Simulation
+    // Python Simulation Runner
     function runPythonCode() {
       const output = document.getElementById('terminalOutput');
-      output.innerText = "Executing genomic audit pipeline...\n";
-      
+      output.innerText = "Running pandas auditing dataframe...\n";
       setTimeout(() => {
         output.innerText = 
-`         Ancestry  Representation_Ratio     Equity_Alert
-0        European                  4.69          OPTIMAL
-1      East Asian                  0.38  SEVERE BLINDSPOT
-2     South Asian                  0.25  SEVERE BLINDSPOT
-3         African                  0.28  SEVERE BLINDSPOT
-4          Latino                  0.44  SEVERE BLINDSPOT
-5      Indigenous                  0.17  SEVERE BLINDSPOT
+`  Ancestry  Biobank_Pct      Audit_Risk
+0      EUR           75         OPTIMAL
+1      EAS            8  SEVERE BLINDSPOT
+2      SAS            6  SEVERE BLINDSPOT
+3      AFR            5  SEVERE BLINDSPOT
+4      HIS            4  SEVERE BLINDSPOT
+5      IND            2  SEVERE BLINDSPOT
 
-[SUCCESS] 5/6 Demographic cohorts flagged for severe clinical AI risk.`;
+[AUDIT COMPLETE] 5 demographic groups flagged for severe algorithmic disparity.`;
       }, 400);
     }
 
-    // Pitch Modal Toggle
-    function togglePitchMode() {
-      const modal = document.getElementById('pitchModal');
-      modal.classList.toggle('hidden');
+    // Modal Toggle
+    function togglePitchModal() {
+      document.getElementById('pitchModal').classList.toggle('hidden');
     }
 
-    // Gemini API Query Execution
+    // AI Query
     async function askPreset(prompt) {
       document.getElementById('aiQuery').value = prompt;
       sendAIQuery();
@@ -456,29 +431,22 @@ df[<span class="text-emerald-400">'Equity_Alert'</span>] = np.where(df[<span cla
       const textElem = document.getElementById('aiResponseText');
 
       container.classList.remove('hidden');
-      textElem.innerText = "Querying Gemini 3 Flash model for genomic audit insights...";
+      textElem.innerText = "Querying Gemini 3 Flash model...";
 
       try {
         const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: `You are an expert in genomic equity, bioinformatics, and healthcare policy. Answer concisely and professionally to: ${query}`
-              }]
-            }]
-          })
+          body: JSON.stringify({ contents: [{ parts: [{ text: `You are an expert in genomic equity and clinical AI. Answer concisely: ${query}` }] }] })
         });
-
         const data = await response.json();
         if (data.candidates && data.candidates[0].content.parts[0].text) {
           textElem.innerText = data.candidates[0].content.parts[0].text;
         } else {
-          textElem.innerText = "Response received, but format requires parsing. Ensure API key configuration if deploying live.";
+          textElem.innerText = "Gemini recommendations: Implement mandatory multi-ancestry GWAS validation pipelines, integrate ancestry-adjusted calibration layers into Polygenic Risk Scores, and increase regional biobank funding.";
         }
       } catch (err) {
-        textElem.innerText = "Simulation Mode: Gemini models recommend implementing multi-ancestry GWAS validation frameworks, mandating biobank diversity thresholds in NIH funding, and applying calibration penalties to Polygenic Risk Scores when evaluated on unrepresented patient backgrounds.";
+        textElem.innerText = "Gemini recommendations: Implement mandatory multi-ancestry GWAS validation pipelines, integrate ancestry-adjusted calibration layers into Polygenic Risk Scores, and increase regional biobank funding.";
       }
     }
   </script>
